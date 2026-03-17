@@ -28,4 +28,10 @@ public class TheaterFood {
     private Food food;
 
     private Integer amount;
+
+    public void decreaseAmount(){
+        if(this.amount > 0){
+            this.amount--;
+        }
+    }
 }
