@@ -18,4 +18,6 @@ public class MovieImage {
     private Movie movie;
 
     private String movieImageUrl;
+
+    private Boolean isThumbnail;
 }
