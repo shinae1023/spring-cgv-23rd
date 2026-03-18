@@ -20,6 +20,8 @@ public class Movie {
     private Long id;
 
     private String title;
+
+    @Lob
     private String description;
 
     @Enumerated(EnumType.STRING)

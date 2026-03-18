@@ -2,8 +2,7 @@ package cgv_23rd.ceos.service;
 
 import cgv_23rd.ceos.domain.enums.MovieStatus;
 import cgv_23rd.ceos.domain.like.MovieLike;
-import cgv_23rd.ceos.domain.movie.Movie;
-import cgv_23rd.ceos.domain.movie.MovieStatistics;
+import cgv_23rd.ceos.domain.movie.*;
 import cgv_23rd.ceos.domain.user.User;
 import cgv_23rd.ceos.dto.movie.request.MovieRequestDto;
 import cgv_23rd.ceos.dto.movie.response.ActorResponseDto;
@@ -13,24 +12,24 @@ import cgv_23rd.ceos.global.apiPayload.ApiResponse;
 import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import cgv_23rd.ceos.repository.*;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class MovieService {
     private final MovieRepository movieRepository;
-    private final ActorRepository actorRepository;
+    private final MovieActorRepository movieActorRepository;
     private final MovieLikeRepository movieLikeRepository;
     private final UserRepository userRepository;
     private final MovieStatisticsRepository movieStatisticsRepository;
 
     // 1. 영화 생성
+    @Transactional
     public ApiResponse<Long> createMovie(MovieRequestDto requestDto){
         Movie movie = Movie.builder()
                 .title(requestDto.title())
@@ -49,33 +48,88 @@ public class MovieService {
     }
 
     // 2. 현재 상영중인 영화 목록 조회 (제목, 썸네일)
+    @Transactional(readOnly = true)
     public ApiResponse<List<MovieResponseDto>> getMovieList(){
-        List<Movie> movies = movieRepository.findAllByStatus(MovieStatus.상영중);
-        List<MovieResponseDto> movieResponseDtoList = new ArrayList<>();
+        List<Movie> movies = movieRepository.findAllByStatusOrderByReservationRateDesc(MovieStatus.상영중);
+        List<MovieResponseDto> movieResponseDtoList = movies.stream()
+                .map(movie -> {
+                    String thumbnail = movie.getMovieImages().stream()
+                            .filter(MovieImage::getIsThumbnail)
+                            .map(MovieImage::getMovieImageUrl)
+                            .findFirst()
+                            .orElse(null);
+
+                    return MovieResponseDto.builder()
+                            .title(movie.getTitle())
+                            .movieImageUrl(thumbnail)
+                            .build();
+                })
+                .toList();
         return ApiResponse.onSuccess("현재 상영중 영화 리스트 조회 성공",movieResponseDtoList);
     }
 
     // 3. 영화 상세 조회 (제목, 개봉일, 예매율, 누적관객, 설명, 에그지수, 사진들)
+    @Transactional(readOnly = true)
     public ApiResponse<MovieDetailResponseDto> getMovieDetail(Long movieId){
-        MovieDetailResponseDto movieDetailResponseDto = MovieDetailResponseDto.builder().build();
+        Movie movie = movieRepository.findDetailById(movieId)
+                .orElseThrow(()-> new GeneralException(GeneralErrorCode.MOVIE_NOT_FOUND,"영화 조회 불가"));
+
+        String thumbnail = movie.getMovieImages().stream()
+                .filter(MovieImage::getIsThumbnail)
+                .map(MovieImage::getMovieImageUrl)
+                .findFirst()
+                .orElse(null);
+
+        List<String> allUrls = movie.getMovieImages().stream()
+                .map(MovieImage::getMovieImageUrl)
+                .toList();
+
+        MovieDetailResponseDto movieDetailResponseDto = MovieDetailResponseDto.builder()
+                .title(movie.getTitle())
+                .openDate(movie.getOpenDate())
+                .description(movie.getDescription())
+                .thumbnailUrl(thumbnail)
+                .imageUrls(allUrls)
+                .audienceCount(movie.getMovieStatistics().getAudienceCount())
+                .reservationRate(movie.getMovieStatistics().getReservationRate())
+                .averageRating(movie.getMovieStatistics().getAverageRating())
+                .eggRate(movie.getMovieStatistics().getEggRate())
+                .build();
+
         return ApiResponse.onSuccess("영화 상세 조회 성공", movieDetailResponseDto);
     }
 
     // 4. 출연진 조회
+    @Transactional(readOnly = true)
     public ApiResponse<List<ActorResponseDto>> getMovieActors(Long movieId){
-        List<ActorResponseDto> actorResponseDtos = new ArrayList<>();
+        Movie movie = movieRepository.findById(movieId)
+                .orElseThrow(()-> new GeneralException(GeneralErrorCode.MOVIE_NOT_FOUND,"영화 조회 불가"));
+
+        List<MovieActor> movieActorcs = movieActorRepository.findAllByMovieWithActor(movie);
+
+        List<ActorResponseDto> actorResponseDtos = movieActorcs.stream()
+                .map(movieActor -> {
+                    return ActorResponseDto.builder()
+                            .name(movieActor.getActor().getName())
+                            .role(movieActor.getActor().getRole())
+                            .profileUrl(movieActor.getActor().getProfileImageUrl())
+                            .build();
+                })
+                .toList();
         return ApiResponse.onSuccess("영화 출연진 조회 성공", actorResponseDtos);
     }
 
     // 5. 영화 찜
+    @Transactional
     public ApiResponse<Void> toggleMovieLike(Long userId, Long movieId){
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new GeneralException(GeneralErrorCode.USER_NOT_FOUND,"유저 조회 불가"));
 
-        MovieLike movieLike = movieLikeRepository.findMovieLikeByUser(user);
 
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(()-> new GeneralException(GeneralErrorCode.MOVIE_NOT_FOUND,"영화 조회 불가"));
+
+        MovieLike movieLike = movieLikeRepository.findMovieLikeByUserAndMovie(user,movie);
 
         if(movieLike==null){
             movieLike = MovieLike.builder()

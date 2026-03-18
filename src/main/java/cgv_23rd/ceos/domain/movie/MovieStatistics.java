@@ -24,4 +24,6 @@ public class MovieStatistics {
     private Double femaleRatio;
     private Double averageRating;
     private Integer reviewCount;
+    private Double eggRate;
+
 }
