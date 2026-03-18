@@ -48,6 +48,7 @@ public class Movie {
     @OneToMany(mappedBy = "movie")
     private List<MovieActor> movieActors = new ArrayList<>();
 
+    //영화 생성 시 빈 통계 객체 생성을 위한 편의 method
     public void createDefaultStatistics() {
         this.movieStatistics = MovieStatistics.builder()
                 .movie(this)

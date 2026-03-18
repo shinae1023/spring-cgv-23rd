@@ -29,6 +29,10 @@ public class Theater {
 
     private Boolean isAvailable;
 
+    @Lob
+    private String description;
+    private String imageUrl;
+
     @OneToMany(mappedBy = "theater")
     private List<Screen> screens = new ArrayList<>();
 

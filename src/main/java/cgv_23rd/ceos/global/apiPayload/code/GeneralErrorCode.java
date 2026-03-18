@@ -30,7 +30,10 @@ public enum GeneralErrorCode implements BaseErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND,"USER_4041","유저를 찾을 수 없습니다."),
 
     //영화 에러
-    MOVIE_NOT_FOUND(HttpStatus.NOT_FOUND,"MOVIE_4041","영화를 찾을 수 없습니다.")
+    MOVIE_NOT_FOUND(HttpStatus.NOT_FOUND,"MOVIE_4041","영화를 찾을 수 없습니다."),
+
+    //영화관 에러
+    THEATER_NOT_FOUND(HttpStatus.NOT_FOUND,"THEATER_4041", "극장을 찾을 수 없습니다.")
 
     ;
 

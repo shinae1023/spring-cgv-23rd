@@ -14,5 +14,5 @@ public class ScheduleService {
     private final TheaterRepository theaterRepository;
     private final MovieRepository movieRepository;
 
-    // 1. 상영 시간표 조회
+    // 1. 극장별 상영 시간표 조회
 }
