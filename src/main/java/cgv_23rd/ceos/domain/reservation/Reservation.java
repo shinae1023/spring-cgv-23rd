@@ -36,4 +36,12 @@ public class Reservation {
 
     @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReservationSeat> reservationSeats = new ArrayList<>();
+
+    public void updateTotalPrice(int amount){
+        this.totalPrice = amount;
+    }
+
+    public void updateStatus(ReservationStatus status){
+        this.status = status;
+    }
 }
