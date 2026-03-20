@@ -37,4 +37,8 @@ public class FoodOrder {
 
     @OneToMany(mappedBy = "foodOrder", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FoodOrderItem> foodOrderItems = new ArrayList<>();
+
+    public void updateTotalPrice(int totalPrice) {
+        this.totalPrice = totalPrice;
+    }
 }
