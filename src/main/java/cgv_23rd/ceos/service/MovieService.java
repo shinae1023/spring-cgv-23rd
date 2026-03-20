@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,13 +32,30 @@ public class MovieService {
     // 1. 영화 생성
     @Transactional
     public ApiResponse<Long> createMovie(MovieRequestDto requestDto){
+
+        if (requestDto.closeDate().isBefore(requestDto.openDate())) {
+            throw new GeneralException(GeneralErrorCode.INVALID_MOVIE_DATE);
+        }
+
+        LocalDate today = LocalDate.now();
+        MovieStatus calculatedStatus;
+
+        if (today.isBefore(requestDto.openDate())) {
+            calculatedStatus = MovieStatus.예정;
+        } else if (today.isAfter(requestDto.closeDate())) {
+            calculatedStatus = MovieStatus.종료;
+        } else {
+            calculatedStatus = MovieStatus.상영중;
+        }
+
         Movie movie = Movie.builder()
                 .title(requestDto.title())
                 .description(requestDto.description())
-                .status(MovieStatus.상영중)
+                .status(calculatedStatus)
                 .openDate(requestDto.openDate())
                 .closeDate(requestDto.closeDate())
                 .build();
+
         movie.createDefaultStatistics();
 
         movieRepository.save(movie);

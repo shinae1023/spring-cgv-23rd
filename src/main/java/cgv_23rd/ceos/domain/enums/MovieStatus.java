@@ -1,5 +1,5 @@
 package cgv_23rd.ceos.domain.enums;
 
 public enum MovieStatus {
-    상영중, 종료;
+    예정, 상영중, 종료;
 }

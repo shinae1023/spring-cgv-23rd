@@ -49,7 +49,9 @@ public class ReviewService {
         reviewRepository.save(review);
 
         MovieStatistics statistics = movie.getMovieStatistics();
-        statistics.addReviewRating(requestDto.rate());
+        if(statistics != null){
+            statistics.addReviewRating(requestDto.rate());
+        }
 
         return ApiResponse.onSuccess("리뷰 작성 성공");
     }

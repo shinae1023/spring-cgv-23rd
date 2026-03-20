@@ -41,7 +41,7 @@ public class ScheduleService {
         Movie movie = movieRepository.findById(requestDto.movieId())
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.MOVIE_NOT_FOUND));
 
-        Screen screen = screenRepository.findById(requestDto.screenId())
+        Screen screen = screenRepository.findByIdWithLock(requestDto.screenId())
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.SCREEN_NOT_FOUND));
 
         // 해당 상영관이 극장 내에 있는지 확인
@@ -50,7 +50,7 @@ public class ScheduleService {
         }
 
         // 종료 시간이 시작 시간보다 빨라서는 안 됨
-        if (requestDto.endAt().isBefore(requestDto.startAt())) {
+        if (!requestDto.endAt().isAfter(requestDto.startAt())) {
             throw new GeneralException(GeneralErrorCode.INVALID_SCHEDULE_TIME);
         }
 

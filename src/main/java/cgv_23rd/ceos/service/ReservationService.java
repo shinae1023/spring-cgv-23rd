@@ -136,6 +136,8 @@ public class ReservationService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
 
+        List<Reservation> reservations = reservationRepository.findAllByUserIdWithDetails(userId);
+
         List<ReservationResponseDto> responseDtos =  user.getReservations().stream()
                 .map(res -> ReservationResponseDto.builder()
                         .reservationId(res.getId())

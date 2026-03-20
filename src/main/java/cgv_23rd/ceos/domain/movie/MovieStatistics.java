@@ -18,13 +18,26 @@ public class MovieStatistics {
     @JoinColumn(name = "movie_id", nullable = false, unique = true)
     private Movie movie;
 
-    private Integer audienceCount;
-    private Double reservationRate;
-    private Double maleRatio;
-    private Double femaleRatio;
-    private Double averageRating;
-    private Integer reviewCount;
-    private Double eggRate;
+    @Builder.Default
+    private Integer audienceCount = 0;
+
+    @Builder.Default
+    private Double reservationRate = 0.0;
+
+    @Builder.Default
+    private Double maleRatio = 0.0;
+
+    @Builder.Default
+    private Double femaleRatio = 0.0;
+
+    @Builder.Default
+    private Double averageRating = 0.0;
+
+    @Builder.Default
+    private Integer reviewCount = 0;
+
+    @Builder.Default
+    private Double eggRate = 0.0;
 
     public void addReviewRating(double newRating) {
         // 총점 계산
