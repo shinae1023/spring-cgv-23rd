@@ -110,20 +110,19 @@ public class ReservationService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.RESERVATION_NOT_FOUND));
 
+        //예매 유저와 예매 취소 유저가 동일한지 확인
         if (!reservation.getUser().getId().equals(userId)) {
             throw new GeneralException(GeneralErrorCode.FORBIDDEN);
         }
 
+        //이미 취소된 예매인지 확인
         if (reservation.getStatus() == ReservationStatus.취소) {
-            throw new GeneralException(GeneralErrorCode.INVALID_PARAMETER, "이미 취소된 예매입니다.");
+            throw new GeneralException(GeneralErrorCode.RESERVATION_ALREADY_CANCELED);
         }
 
+        //이미 시작한 영화인지 확인
         if (reservation.getMovieScreen().getStartAt().isBefore(LocalDateTime.now())) {
-            throw new GeneralException(GeneralErrorCode.INVALID_PARAMETER, "상영 시작 전까지만 예매를 취소할 수 있습니다.");
-        }
-
-        if (reservation.getStatus() == ReservationStatus.취소) {
-            throw new GeneralException(GeneralErrorCode.RESERVATION_ALREADY_CANCLED);
+            throw new GeneralException(GeneralErrorCode.MOVIE_ALREADY_STARTED);
         }
 
         reservation.updateStatus(ReservationStatus.취소);
@@ -133,11 +132,11 @@ public class ReservationService {
 
     // 3. 예매 내역 조회
     @Transactional(readOnly = true)
-    public List<ReservationResponseDto> getReservationList(Long userId) {
+    public ApiResponse<List<ReservationResponseDto>> getReservationList(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
 
-        return user.getReservations().stream()
+        List<ReservationResponseDto> responseDtos =  user.getReservations().stream()
                 .map(res -> ReservationResponseDto.builder()
                         .reservationId(res.getId())
                         .movieTitle(res.getMovieScreen().getMovie().getTitle())
@@ -152,5 +151,7 @@ public class ReservationService {
                         .reserveDate(res.getReserveDate())
                         .build())
                 .collect(Collectors.toList());
+
+        return ApiResponse.onSuccess("예매 내역 조회 성공", responseDtos);
     }
 }

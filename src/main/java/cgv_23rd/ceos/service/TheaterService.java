@@ -1,18 +1,13 @@
 package cgv_23rd.ceos.service;
 
 import cgv_23rd.ceos.domain.enums.Region;
-import cgv_23rd.ceos.domain.like.MovieLike;
 import cgv_23rd.ceos.domain.like.TheaterLike;
-import cgv_23rd.ceos.domain.movie.Movie;
-import cgv_23rd.ceos.domain.movie.MovieImage;
 import cgv_23rd.ceos.domain.theater.Theater;
 import cgv_23rd.ceos.domain.user.User;
-import cgv_23rd.ceos.dto.movie.response.MovieResponseDto;
 import cgv_23rd.ceos.dto.theater.request.TheaterRequestDto;
 import cgv_23rd.ceos.dto.theater.response.TheaterDetailResponseDto;
 import cgv_23rd.ceos.dto.theater.response.TheaterResponseDto;
 import cgv_23rd.ceos.global.apiPayload.ApiResponse;
-import cgv_23rd.ceos.global.apiPayload.code.BaseErrorCode;
 import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import cgv_23rd.ceos.repository.TheaterLikeRepository;

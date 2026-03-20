@@ -36,16 +36,19 @@ public enum GeneralErrorCode implements BaseErrorCode {
     THEATER_NOT_FOUND(HttpStatus.NOT_FOUND,"THEATER_4041", "극장을 찾을 수 없습니다."),
     SEAT_NOT_FOUND(HttpStatus.NOT_FOUND,"SEAT_4041","좌석을 찾을 수 없습니다."),
     SEAT_SCREEN_INVALID(HttpStatus.BAD_REQUEST, "SEAT_4001","해당 상영관의 좌석이 아닙니다."),
-
-    //상영회차 에러
     MOVIESCREEN_NOT_FOUND(HttpStatus.NOT_FOUND,"MOVIESCREEN_4041","상영 회차를 찾을 수 없습니다."),
+    SCREEN_NOT_FOUND(HttpStatus.NOT_FOUND,"SCREEN_4041","상영관을 찾을 수 없습니다."),
+
+    // 상영 시간표(스케줄) 에러
+    INVALID_SCHEDULE_TIME(HttpStatus.BAD_REQUEST, "SCHEDULE_4001", "종료 시간이 시작 시간보다 빠를 수 없습니다."),
+    SCHEDULE_OVERLAPPED(HttpStatus.BAD_REQUEST, "SCHEDULE_4002", "해당 상영관에 시간이 겹치는 상영 일정이 존재합니다."),
 
     //예매 에러
     RESERVATION_NOT_FOUND(HttpStatus.NOT_FOUND, "RESERVATION_4041", "예매를 찾을 수 없습니다."),
-    RESERVATION_ALREADY_CANCLED(HttpStatus.BAD_REQUEST,"RESERVATION_4001","이미 취소된 예매입니다."),
+    RESERVATION_ALREADY_CANCELED(HttpStatus.BAD_REQUEST,"RESERVATION_4001","이미 취소된 예매입니다."),
     RESERVATION_SEAT_EMPTY(HttpStatus.BAD_REQUEST,"RESERVATION_4002", "예매할 좌석을 선택해주세요."),
     RESERVATION_SEAT_DUPLICATION(HttpStatus.BAD_REQUEST,"RESERVATION_4002", "이미 예약된 좌석입니다."),
-    MOVIE_ALREADY_STARTED(HttpStatus.BAD_REQUEST,"RESERVATION_4003","이미 상영이 시작된 회차는 예매할 수 없습니다.")
+    MOVIE_ALREADY_STARTED(HttpStatus.BAD_REQUEST,"RESERVATION_4003","이미 상영이 시작된 회차는 예매/취소할 수 없습니다."),
 
     ;
 
