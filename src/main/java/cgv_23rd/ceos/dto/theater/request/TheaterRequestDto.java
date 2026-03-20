@@ -1,7 +1,6 @@
 package cgv_23rd.ceos.dto.theater.request;
 
-import cgv_23rd.ceos.domain.enums.Region;
-import lombok.Builder;
+import cgv_23rd.ceos.entity.enums.Region;
 
 public record TheaterRequestDto(String name,
                                 String address,

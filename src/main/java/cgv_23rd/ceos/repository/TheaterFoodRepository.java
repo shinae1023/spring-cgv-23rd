@@ -1,8 +1,8 @@
 package cgv_23rd.ceos.repository;
 
-import cgv_23rd.ceos.domain.food.Food;
-import cgv_23rd.ceos.domain.food.TheaterFood;
-import cgv_23rd.ceos.domain.theater.Theater;
+import cgv_23rd.ceos.entity.food.Food;
+import cgv_23rd.ceos.entity.food.TheaterFood;
+import cgv_23rd.ceos.entity.theater.Theater;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;

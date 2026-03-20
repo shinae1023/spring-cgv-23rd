@@ -1,6 +1,6 @@
 package cgv_23rd.ceos.dto.reservation.response;
 
-import cgv_23rd.ceos.domain.enums.ReservationStatus;
+import cgv_23rd.ceos.entity.enums.ReservationStatus;
 import lombok.Builder;
 import java.time.LocalDateTime;
 import java.util.List;

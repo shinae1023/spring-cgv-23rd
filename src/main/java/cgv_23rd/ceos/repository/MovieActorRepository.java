@@ -1,7 +1,7 @@
 package cgv_23rd.ceos.repository;
 
-import cgv_23rd.ceos.domain.movie.Movie;
-import cgv_23rd.ceos.domain.movie.MovieActor;
+import cgv_23rd.ceos.entity.movie.Movie;
+import cgv_23rd.ceos.entity.movie.MovieActor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

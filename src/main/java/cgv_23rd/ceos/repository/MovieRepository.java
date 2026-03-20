@@ -1,7 +1,7 @@
 package cgv_23rd.ceos.repository;
 
-import cgv_23rd.ceos.domain.enums.MovieStatus;
-import cgv_23rd.ceos.domain.movie.Movie;
+import cgv_23rd.ceos.entity.enums.MovieStatus;
+import cgv_23rd.ceos.entity.movie.Movie;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -9,8 +9,6 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
-
-import static cgv_23rd.ceos.domain.enums.MovieStatus.상영중;
 
 public interface MovieRepository extends JpaRepository<Movie,Long> {
 

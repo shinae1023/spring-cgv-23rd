@@ -1,7 +1,6 @@
 package cgv_23rd.ceos.dto.movie.response;
 
-import cgv_23rd.ceos.domain.enums.Role;
-import jakarta.validation.constraints.NotBlank;
+import cgv_23rd.ceos.entity.enums.Role;
 import lombok.Builder;
 
 @Builder

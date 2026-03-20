@@ -1,9 +1,9 @@
 package cgv_23rd.ceos.service;
 
-import cgv_23rd.ceos.domain.movie.Movie;
-import cgv_23rd.ceos.domain.movie.MovieScreen;
-import cgv_23rd.ceos.domain.theater.Screen;
-import cgv_23rd.ceos.domain.theater.Theater;
+import cgv_23rd.ceos.entity.movie.Movie;
+import cgv_23rd.ceos.entity.movie.MovieScreen;
+import cgv_23rd.ceos.entity.theater.Screen;
+import cgv_23rd.ceos.entity.theater.Theater;
 import cgv_23rd.ceos.dto.schedule.request.ScheduleCreateRequestDto;
 import cgv_23rd.ceos.dto.schedule.response.ScheduleResponseDto;
 import cgv_23rd.ceos.global.apiPayload.ApiResponse;

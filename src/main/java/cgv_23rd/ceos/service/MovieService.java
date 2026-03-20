@@ -1,9 +1,9 @@
 package cgv_23rd.ceos.service;
 
-import cgv_23rd.ceos.domain.enums.MovieStatus;
-import cgv_23rd.ceos.domain.like.MovieLike;
-import cgv_23rd.ceos.domain.movie.*;
-import cgv_23rd.ceos.domain.user.User;
+import cgv_23rd.ceos.entity.enums.MovieStatus;
+import cgv_23rd.ceos.entity.like.MovieLike;
+import cgv_23rd.ceos.entity.movie.*;
+import cgv_23rd.ceos.entity.user.User;
 import cgv_23rd.ceos.dto.movie.request.MovieRequestDto;
 import cgv_23rd.ceos.dto.movie.response.ActorResponseDto;
 import cgv_23rd.ceos.dto.movie.response.MovieDetailResponseDto;
@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service

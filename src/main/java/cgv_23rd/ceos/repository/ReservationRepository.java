@@ -1,6 +1,6 @@
 package cgv_23rd.ceos.repository;
 
-import cgv_23rd.ceos.domain.reservation.Reservation;
+import cgv_23rd.ceos.entity.reservation.Reservation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

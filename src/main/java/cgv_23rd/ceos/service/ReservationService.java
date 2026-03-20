@@ -1,11 +1,11 @@
 package cgv_23rd.ceos.service;
 
-import cgv_23rd.ceos.domain.enums.ReservationStatus;
-import cgv_23rd.ceos.domain.movie.MovieScreen;
-import cgv_23rd.ceos.domain.reservation.Reservation;
-import cgv_23rd.ceos.domain.reservation.ReservationSeat;
-import cgv_23rd.ceos.domain.theater.Seat;
-import cgv_23rd.ceos.domain.user.User;
+import cgv_23rd.ceos.entity.enums.ReservationStatus;
+import cgv_23rd.ceos.entity.movie.MovieScreen;
+import cgv_23rd.ceos.entity.reservation.Reservation;
+import cgv_23rd.ceos.entity.reservation.ReservationSeat;
+import cgv_23rd.ceos.entity.theater.Seat;
+import cgv_23rd.ceos.entity.user.User;
 import cgv_23rd.ceos.dto.reservation.request.ReservationRequestDto;
 import cgv_23rd.ceos.dto.reservation.response.ReservationResponseDto;
 import cgv_23rd.ceos.global.apiPayload.ApiResponse;

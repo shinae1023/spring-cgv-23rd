@@ -1,6 +1,6 @@
 package cgv_23rd.ceos.repository;
 
-import cgv_23rd.ceos.domain.theater.Screen;
+import cgv_23rd.ceos.entity.theater.Screen;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;

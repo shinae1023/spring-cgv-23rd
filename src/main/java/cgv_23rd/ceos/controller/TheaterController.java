@@ -1,6 +1,6 @@
 package cgv_23rd.ceos.controller;
 
-import cgv_23rd.ceos.domain.enums.Region;
+import cgv_23rd.ceos.entity.enums.Region;
 import cgv_23rd.ceos.dto.theater.request.TheaterRequestDto;
 import cgv_23rd.ceos.dto.theater.response.TheaterDetailResponseDto;
 import cgv_23rd.ceos.dto.theater.response.TheaterResponseDto;

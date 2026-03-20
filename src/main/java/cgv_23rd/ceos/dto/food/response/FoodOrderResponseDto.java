@@ -1,5 +1,5 @@
 package cgv_23rd.ceos.dto.food.response;
-import cgv_23rd.ceos.domain.enums.FoodOrderStatus;
+import cgv_23rd.ceos.entity.enums.FoodOrderStatus;
 import lombok.Builder;
 import java.time.LocalDateTime;
 import java.util.List;

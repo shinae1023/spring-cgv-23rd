@@ -1,6 +1,6 @@
 package cgv_23rd.ceos.repository;
 
-import cgv_23rd.ceos.domain.food.Food;
+import cgv_23rd.ceos.entity.food.Food;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface FoodRepository extends JpaRepository<Food,Long> {
