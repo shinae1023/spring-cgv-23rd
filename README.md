@@ -661,8 +661,8 @@ UNIQUE (movie_id, sort_order)
     1. 예매 내역 자체(`Reservation`)는 상태만 '취소'로 바꿔서 DB에 남겨둠.
     2. `reservationSeats.clear()`를 통해 점유하고 있던 좌석 정보만 DB에서 삭제함.
     3. 이를 통해 예매 이력은 보존하면서도, 해당 좌석은 다른 사람이 다시 예매할 수 있도록 비워주는(해제) 효과를 얻음.
-
-  ### 7-6. 주요 테스트 시나리오
+       
+### 2-6. 주요 테스트 시나리오
 
 - **단위 테스트 수행**: `@ExtendWith(MockitoExtension.class)`를 사용하여 데이터베이스 연결 없이 서비스 계층의 로직만 분리하여 테스트
 - **의존성 모킹(Mocking)**: `UserRepository`, `ReservationRepository`, `ReservationSeatRepository`, `MovieScreenRepository`, `SeatRepository` 등 연관된 모든 리포지토리를 가짜 객체(Mock)로 만들어 주입
