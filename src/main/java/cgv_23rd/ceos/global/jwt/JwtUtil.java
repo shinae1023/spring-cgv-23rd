@@ -17,10 +17,11 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    // Access Token 유효 시간 (예: 1시간)
-    private final long ACCESS_TOKEN_TIME = 60 * 60 * 1000L;
-    // Refresh Token 유효 시간 (예: 7일)
-    private final long REFRESH_TOKEN_TIME = 7 * 24 * 60 * 60 * 1000L;
+    @Value("${jwt.expiration.access-token}")
+    private long accessTokenTime;
+
+    @Value("${jwt.expiration.refresh-token}")
+    private long refreshTokenTime;
 
     // "Authorization" 헤더의 KEY 값
     public static final String AUTHORIZATION_HEADER = "Authorization";
@@ -40,12 +41,12 @@ public class JwtUtil {
 
     // Access Token 생성
     public String createAccessToken(String email, Long userId) {
-        return createToken(email, userId, ACCESS_TOKEN_TIME);
+        return createToken(email, userId, accessTokenTime);
     }
 
     // Refresh Token 생성
     public String createRefreshToken(String email) {
-        return createToken(email, null, REFRESH_TOKEN_TIME);
+        return createToken(email, null, refreshTokenTime);
     }
 
     private String createToken(String email, Long userId, long expireTime) {
