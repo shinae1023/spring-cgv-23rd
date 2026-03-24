@@ -33,7 +33,7 @@ public class FoodOrderService {
     private final TheaterFoodRepository theaterFoodRepository;
 
     // 1. 음식 주문
-    public ApiResponse<Void> createFoodOrder(Long userId, FoodOrderRequestDto requestDto) {
+    public void createFoodOrder(Long userId, FoodOrderRequestDto requestDto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
 
@@ -80,12 +80,11 @@ public class FoodOrderService {
         foodOrder.updateTotalPrice(totalOrderPrice);
         foodOrderRepository.save(foodOrder);
 
-        return ApiResponse.onSuccess("음식 주문 성공");
     }
 
     // 2. 주문 내역 확인
     @Transactional(readOnly = true)
-    public ApiResponse<List<FoodOrderResponseDto>> getFoodOrderList(Long userId) {
+    public List<FoodOrderResponseDto> getFoodOrderList(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
 
@@ -106,10 +105,10 @@ public class FoodOrderService {
                         .build())
                 .collect(Collectors.toList());
 
-        return ApiResponse.onSuccess("음식 주문 내역 조회 성공", responseDtos);
+        return responseDtos;
     }
 
-    public ApiResponse<Void> createFood(FoodCreateRequestDto requestDto) {
+    public void createFood(FoodCreateRequestDto requestDto) {
 
         Food food = Food.builder()
                 .name(requestDto.name())
@@ -129,16 +128,12 @@ public class FoodOrderService {
                 .collect(Collectors.toList());
 
         theaterFoodRepository.saveAll(theaterFoods);
-
-        return ApiResponse.onSuccess("신규 음식 등록 및 전 지점 반영 성공");
     }
 
-    public ApiResponse<Void> updateFoodStock(Long theaterFoodId, int stock){
+    public void updateFoodStock(Long theaterFoodId, int stock){
         TheaterFood theaterFood = theaterFoodRepository.findById(theaterFoodId)
                 .orElseThrow(()-> new GeneralException(GeneralErrorCode.FOOD_NOT_FOUND));
 
         theaterFood.updateFoodStock(stock);
-
-        return ApiResponse.onSuccess("재고 갱신 성공");
     }
 }

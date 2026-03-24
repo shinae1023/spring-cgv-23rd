@@ -27,7 +27,9 @@ public class ReservationController {
             @RequestParam(name = "userId") Long userId,
             @Valid @RequestBody ReservationRequestDto requestDto) {
 
-        return reservationService.createReservation(userId, requestDto);
+        reservationService.createReservation(userId, requestDto);
+
+        return ApiResponse.onSuccess("영화 예매 성공");
     }
 
     // 2. 영화 예매 취소
@@ -37,7 +39,9 @@ public class ReservationController {
             @RequestParam(name = "userId") Long userId,
             @PathVariable(name = "reservationId") Long reservationId) {
 
-        return reservationService.cancelReservation(userId, reservationId);
+        reservationService.cancelReservation(userId, reservationId);
+
+        return ApiResponse.onSuccess("영화 예매 취소 성공");
     }
 
     // 3. 예매 내역 조회
@@ -46,6 +50,6 @@ public class ReservationController {
     public ApiResponse<List<ReservationResponseDto>> getReservationList(
             @RequestParam(name = "userId") Long userId) {
 
-        return reservationService.getReservationList(userId);
+        return ApiResponse.onSuccess("예매 내역 조회 성공",reservationService.getReservationList(userId));
     }
 }

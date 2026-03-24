@@ -26,29 +26,30 @@ public class TheaterController {
     @GetMapping("")
     @Operation(summary = "지역별 영화관 목록 조회 API", description = "특정 지역(Region)에 속한 영화관 목록을 조회함")
     public ApiResponse<List<TheaterResponseDto>> getTheatersByRegion(@RequestParam(name = "region") Region region) {
-        return theaterService.getTheatersByRegion(region);
+        return ApiResponse.onSuccess("영화관 목록 조회 성공",theaterService.getTheatersByRegion(region));
     }
 
     // 2. 영화관 상세 조회
     @GetMapping("/{theaterId}")
     @Operation(summary = "영화관 상세 조회 API", description = "특정 영화관의 상세 정보(설명, 이미지 등)를 조회함")
     public ApiResponse<TheaterDetailResponseDto> getTheaterDetail(@PathVariable(name = "theaterId") Long theaterId) {
-        return theaterService.getTheaterDetail(theaterId);
+        return ApiResponse.onSuccess("영화관 상세 조회 성공",theaterService.getTheaterDetail(theaterId));
     }
 
     // 3. 영화관 찜
     @PostMapping("/{theaterId}/like")
     @Operation(summary = "영화관 찜 토글 API", description = "영화관 찜하기 또는 찜 취소 처리를 수행함")
-    public ApiResponse<Void> toggleTheaterLike(
+    public ApiResponse<String> toggleTheaterLike(
             @PathVariable(name = "theaterId") Long theaterId,
             @RequestParam(name = "userId") Long userId) {
-        return theaterService.toggleTheaterLike(userId, theaterId);
+        return ApiResponse.onSuccess("영화관 찜 성공",theaterService.toggleTheaterLike(userId, theaterId));
     }
 
     // 4. 극장 생성
     @PostMapping("")
     @Operation(summary = "극장 생성 API", description = "새로운 극장 정보를 등록함")
     public ApiResponse<Void> createTheater(@Valid @RequestBody TheaterRequestDto requestDto) {
-        return theaterService.createTheater(requestDto);
+        theaterService.createTheater(requestDto);
+        return ApiResponse.onSuccess("극장 생성 성공");
     }
 }

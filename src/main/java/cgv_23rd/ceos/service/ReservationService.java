@@ -34,7 +34,7 @@ public class ReservationService {
     private final SeatRepository seatRepository;
 
     // 1. 영화 예매
-    public ApiResponse<Void> createReservation(Long userId, ReservationRequestDto requestDto) {
+    public void createReservation(Long userId, ReservationRequestDto requestDto) {
         // 좌석 없는 예메 방지
         if (requestDto.seatIds() == null || requestDto.seatIds().isEmpty()) {
             throw new GeneralException(GeneralErrorCode.RESERVATION_SEAT_EMPTY);
@@ -97,12 +97,10 @@ public class ReservationService {
 
         reservation.updateTotalPrice(calculatedTotalPrice);
         reservationRepository.save(reservation);
-
-        return ApiResponse.onSuccess("예매 성공");
     }
 
     // 2. 영화 예매 취소
-    public ApiResponse<Void> cancelReservation(Long userId, Long reservationId) {
+    public void cancelReservation(Long userId, Long reservationId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
 
@@ -125,19 +123,17 @@ public class ReservationService {
         }
 
         reservation.cancel();
-
-        return ApiResponse.onSuccess("예매 취소 성공");
     }
 
     // 3. 예매 내역 조회
     @Transactional(readOnly = true)
-    public ApiResponse<List<ReservationResponseDto>> getReservationList(Long userId) {
+    public List<ReservationResponseDto> getReservationList(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
 
         List<Reservation> reservations = reservationRepository.findAllByUserIdWithDetails(userId);
 
-        List<ReservationResponseDto> responseDtos =  user.getReservations().stream()
+        return user.getReservations().stream()
                 .map(res -> ReservationResponseDto.builder()
                         .reservationId(res.getId())
                         .movieTitle(res.getMovieScreen().getMovie().getTitle())
@@ -152,7 +148,5 @@ public class ReservationService {
                         .reservationAt(res.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
-
-        return ApiResponse.onSuccess("예매 내역 조회 성공", responseDtos);
     }
 }

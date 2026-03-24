@@ -28,7 +28,7 @@ public class ReviewService {
     private final MovieRepository movieRepository;
 
     // 1. 리뷰 생성
-    public ApiResponse<Void> createReview(Long userId, ReviewRequestDto requestDto) {
+    public void createReview(Long userId, ReviewRequestDto requestDto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
 
@@ -52,20 +52,18 @@ public class ReviewService {
         if(statistics != null){
             statistics.addReviewRating(requestDto.rate());
         }
-
-        return ApiResponse.onSuccess("리뷰 작성 성공");
     }
 
     // 2. 특정 영화 리뷰 조회
     @Transactional(readOnly = true)
-    public ApiResponse<List<ReviewResponseDto>> getMovieReviews(Long movieId) {
+    public List<ReviewResponseDto> getMovieReviews(Long movieId) {
         if (!movieRepository.existsById(movieId)) {
             throw new GeneralException(GeneralErrorCode.MOVIE_NOT_FOUND);
         }
 
         List<Review> reviews = reviewRepository.findAllByMovieId(movieId);
 
-        List<ReviewResponseDto> responseDtos = reviews.stream()
+        return reviews.stream()
                 .map(review -> ReviewResponseDto.builder()
                         .reviewId(review.getId())
                         .username(review.getUser().getName())
@@ -73,7 +71,5 @@ public class ReviewService {
                         .content(review.getContent())
                         .build())
                 .collect(Collectors.toList());
-
-        return ApiResponse.onSuccess("리뷰 조회 성공", responseDtos);
     }
 }

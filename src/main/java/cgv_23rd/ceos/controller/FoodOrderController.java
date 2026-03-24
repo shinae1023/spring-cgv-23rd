@@ -26,26 +26,29 @@ public class FoodOrderController {
     public ApiResponse<Void> createFoodOrder(
             @RequestParam(name = "userId") Long userId,
             @Valid @RequestBody FoodOrderRequestDto requestDto) {
-        return foodOrderService.createFoodOrder(userId, requestDto);
+        foodOrderService.createFoodOrder(userId, requestDto);
+        return ApiResponse.onSuccess("음식 주문 성공");
     }
 
     @GetMapping("/orders")
     @Operation(summary = "내 매점 주문 내역 조회 API", description = "특정 사용자의 전체 음식 주문 내역을 조회합니다.")
     public ApiResponse<List<FoodOrderResponseDto>> getFoodOrderList(
             @RequestParam(name = "userId") Long userId) {
-        return foodOrderService.getFoodOrderList(userId);
+        return ApiResponse.onSuccess("주문 내역 조회 성공", foodOrderService.getFoodOrderList(userId));
     }
 
     @GetMapping("")
     @Operation(summary = "음식 등록 API", description = "음식을 모든 매장에 등록합니다.")
     public ApiResponse<Void> getFoodOrderList(
             @RequestBody FoodCreateRequestDto requestDto) {
-        return foodOrderService.createFood(requestDto);
+        foodOrderService.createFood(requestDto);
+        return ApiResponse.onSuccess("음식 등록 성공");
     }
 
     @PatchMapping("/{theaterFoodId}")
     @Operation(summary = "음식 재고 수정 API", description = "음식 재고를 수정합니다.")
     public ApiResponse<Void> updateFoodStock(@PathVariable Long theaterFoodId, @RequestParam int stock){
-        return foodOrderService.updateFoodStock(theaterFoodId, stock);
+        foodOrderService.updateFoodStock(theaterFoodId, stock);
+        return ApiResponse.onSuccess("재고 수정 성공");
     }
 }

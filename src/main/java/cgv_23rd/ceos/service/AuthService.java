@@ -29,7 +29,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
 
     @Transactional
-    public ApiResponse<Void> signup(SignupRequestDto requestDto) {
+    public void signup(SignupRequestDto requestDto) {
 
         // 이메일 중복 확인
         if (userRepository.existsByEmail(requestDto.email())) {
@@ -48,12 +48,10 @@ public class AuthService {
                 .phone(requestDto.phone())
                 .build();
         userRepository.save(user);
-
-        return ApiResponse.onSuccess("회원가입 성공");
     }
 
     @Transactional
-    public ApiResponse<LoginResponseDto> login(LoginRequestDto requestDto) {
+    public LoginResponseDto login(LoginRequestDto requestDto) {
         // 1. 이메일로 유저 조회
         User user = userRepository.findByEmail(requestDto.email())
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.INVALID_LOGIN));
@@ -80,19 +78,15 @@ public class AuthService {
             refreshTokenRepository.save(newRefreshToken);
         }
 
-        LoginResponseDto responseDto = LoginResponseDto.builder()
+        return LoginResponseDto.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
-
-        return ApiResponse.onSuccess("로그인 성공", responseDto);
     }
 
-    /**
-     * Access Token 재발급
-     */
+    //AccessToken 재발급
     @Transactional
-    public ApiResponse<ReissueResponseDto> reissueToken(ReissueRequestDto reissueRequestDto) {
+    public ReissueResponseDto reissueToken(ReissueRequestDto reissueRequestDto) {
 
         // 1. Refresh Token 유효성 검증
         if (!jwtUtil.validateToken(reissueRequestDto.refreshToken())) {
@@ -113,11 +107,10 @@ public class AuthService {
         token.updateToken(newRefreshToken);
 
         // 새로운 토큰 DTO에 담아 반환
-        ReissueResponseDto responseDto = ReissueResponseDto.builder()
+
+        return ReissueResponseDto.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
                 .build();
-
-        return ApiResponse.onSuccess("리프레시 토큰 재발급 성공", responseDto);
     }
 }

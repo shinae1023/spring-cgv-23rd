@@ -27,7 +27,9 @@ public class ScheduleController {
     public ApiResponse<Void> createSchedule(@PathVariable Long theaterId,
             @Valid @RequestBody ScheduleCreateRequestDto requestDto) {
 
-        return scheduleService.createSchedule(theaterId, requestDto);
+        scheduleService.createSchedule(theaterId, requestDto);
+
+        return ApiResponse.onSuccess("상영 시간표 등록 성공");
     }
 
     // 2. 극장별 상영 시간표 조회
@@ -37,6 +39,6 @@ public class ScheduleController {
             @PathVariable Long theaterId,
             @RequestParam(name = "targetDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate targetDate) {
 
-        return scheduleService.getSchedules(theaterId, targetDate);
+        return ApiResponse.onSuccess("상영 시간표 조회 성공",scheduleService.getSchedules(theaterId, targetDate));
     }
 }

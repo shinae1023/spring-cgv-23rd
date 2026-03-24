@@ -25,13 +25,14 @@ public class ReviewController {
     public ApiResponse<Void> createReview(
             @RequestParam(name = "userId") Long userId,
             @Valid @RequestBody ReviewRequestDto requestDto) {
-        return reviewService.createReview(userId, requestDto);
+        reviewService.createReview(userId, requestDto);
+        return ApiResponse.onSuccess("리뷰 작성 성공");
     }
 
     @GetMapping("/movie/{movieId}")
     @Operation(summary = "특정 영화 리뷰 조회 API", description = "해당 영화에 작성된 모든 리뷰를 조회합니다.")
     public ApiResponse<List<ReviewResponseDto>> getMovieReviews(
             @PathVariable(name = "movieId") Long movieId) {
-        return reviewService.getMovieReviews(movieId);
+        return ApiResponse.onSuccess("리뷰 조회 성공",reviewService.getMovieReviews(movieId));
     }
 }

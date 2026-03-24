@@ -34,7 +34,7 @@ public class ScheduleService {
     private final ScreenRepository screenRepository;
 
     // 1. 극장별 상영 시간표 등록
-    public ApiResponse<Void> createSchedule(Long theaterId, ScheduleCreateRequestDto requestDto) {
+    public void createSchedule(Long theaterId, ScheduleCreateRequestDto requestDto) {
         Theater theater = theaterRepository.findById(theaterId)
                 .orElseThrow(()-> new GeneralException(GeneralErrorCode.THEATER_NOT_FOUND));
 
@@ -72,13 +72,11 @@ public class ScheduleService {
                 .build();
 
         movieScreenRepository.save(movieScreen);
-
-        return ApiResponse.onSuccess("상영 시간표 등록 성공");
     }
 
     // 2. 극장별 상영 시간표 조회
     @Transactional(readOnly = true)
-    public ApiResponse<List<ScheduleResponseDto>> getSchedules(Long theaterId, LocalDate targetDate) {
+    public List<ScheduleResponseDto> getSchedules(Long theaterId, LocalDate targetDate) {
         Theater theater = theaterRepository.findById(theaterId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.THEATER_NOT_FOUND));
 
@@ -89,7 +87,7 @@ public class ScheduleService {
                 theaterId, startOfDay, endOfDay
         );
 
-        List<ScheduleResponseDto> responseDtos = schedules.stream()
+        return schedules.stream()
                 .map(ms -> ScheduleResponseDto.builder()
                         .movieScreenId(ms.getId())
                         .movieId(ms.getMovie().getId())
@@ -101,7 +99,5 @@ public class ScheduleService {
                         .endAt(ms.getEndAt())
                         .build())
                 .collect(Collectors.toList());
-
-        return ApiResponse.onSuccess("상영 시간표 조회 성공", responseDtos);
     }
 }

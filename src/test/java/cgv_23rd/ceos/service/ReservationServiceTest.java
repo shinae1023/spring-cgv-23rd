@@ -66,10 +66,9 @@ class ReservationServiceTest {
                 .willReturn(false);
 
         // when
-        ApiResponse<Void> response = reservationService.createReservation(userId, requestDto);
+        reservationService.createReservation(userId, requestDto);
 
         // then
-        assertEquals("예매 성공", response.getMessage());
         verify(reservationRepository, times(1)).save(any(Reservation.class));
     }
 
