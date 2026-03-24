@@ -53,15 +53,12 @@ public class FoodOrderService {
             Food food = foodRepository.findById(itemDto.foodId())
                     .orElseThrow(() -> new GeneralException(GeneralErrorCode.FOOD_NOT_FOUND));
 
-            TheaterFood theaterFood = theaterFoodRepository.findByTheaterAndFood(theater, food)
-                    .orElseThrow(() -> new GeneralException(GeneralErrorCode.THEATER_FOOD_NOT_FOUND));
+            // DB 레벨에서 즉시 차감
+            int updatedCount = theaterFoodRepository.decreaseStock(theater, food, itemDto.quantity());
 
-            if (theaterFood.getAmount() < itemDto.quantity()) {
+            // 업데이트된 행이 없다면 재고 부족
+            if (updatedCount == 0) {
                 throw new GeneralException(GeneralErrorCode.OUT_OF_STOCK, food.getName() + "의 재고가 부족합니다.");
-            }
-
-            for (int i = 0; i < itemDto.quantity(); i++) {
-                theaterFood.decreaseAmount();
             }
 
             int itemTotalPrice = food.getPrice() * itemDto.quantity();

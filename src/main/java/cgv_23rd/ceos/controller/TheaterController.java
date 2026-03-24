@@ -5,11 +5,13 @@ import cgv_23rd.ceos.dto.theater.request.TheaterRequestDto;
 import cgv_23rd.ceos.dto.theater.response.TheaterDetailResponseDto;
 import cgv_23rd.ceos.dto.theater.response.TheaterResponseDto;
 import cgv_23rd.ceos.global.apiPayload.ApiResponse;
+import cgv_23rd.ceos.global.security.UserDetailsImpl;
 import cgv_23rd.ceos.service.TheaterService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,7 +43,8 @@ public class TheaterController {
     @Operation(summary = "영화관 찜 토글 API", description = "영화관 찜하기 또는 찜 취소 처리를 수행함")
     public ApiResponse<String> toggleTheaterLike(
             @PathVariable(name = "theaterId") Long theaterId,
-            @RequestParam(name = "userId") Long userId) {
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Long userId = userDetails.getUser().getId();
         return ApiResponse.onSuccess("영화관 찜 성공",theaterService.toggleTheaterLike(userId, theaterId));
     }
 

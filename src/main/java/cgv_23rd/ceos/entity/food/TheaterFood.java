@@ -29,11 +29,7 @@ public class TheaterFood {
 
     private Integer amount;
 
-    public void decreaseAmount(){
-        if(this.amount > 0){
-            this.amount--;
-        }
-    }
+    public void decreaseAmount(int quantity) { this.amount -= quantity; }
 
     public void updateFoodStock(int stock){
         this.amount = stock;

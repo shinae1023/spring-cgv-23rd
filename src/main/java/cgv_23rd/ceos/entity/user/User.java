@@ -21,7 +21,7 @@ import java.util.List;
 @Table(name = "users")
 public class User extends BaseEntity {
 
-    @Id @GeneratedValue
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;

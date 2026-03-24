@@ -3,6 +3,7 @@ package cgv_23rd.ceos.global.apiPayload.exception.handler;
 import cgv_23rd.ceos.global.apiPayload.ApiResponse;
 import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +18,12 @@ import java.nio.charset.StandardCharsets;
 @Component
 @RequiredArgsConstructor
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
-    private final ObjectMapper objectMapper ;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response,
-                       AccessDeniedException accessDeniedException) throws IOException {
+    public void handle(@Nonnull HttpServletRequest request,
+                       @Nonnull HttpServletResponse response,
+                       @Nonnull AccessDeniedException accessDeniedException) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 

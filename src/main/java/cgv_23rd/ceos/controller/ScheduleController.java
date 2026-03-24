@@ -3,12 +3,14 @@ package cgv_23rd.ceos.controller;
 import cgv_23rd.ceos.dto.schedule.request.ScheduleCreateRequestDto;
 import cgv_23rd.ceos.dto.schedule.response.ScheduleResponseDto;
 import cgv_23rd.ceos.global.apiPayload.ApiResponse;
+import cgv_23rd.ceos.global.security.UserDetailsImpl;
 import cgv_23rd.ceos.service.ScheduleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -25,8 +27,10 @@ public class ScheduleController {
     @PostMapping("/{theaterId}")
     @Operation(summary = "상영 시간표 등록 API", description = "특정 상영관에 영화 상영 일정을 등록함")
     public ApiResponse<Void> createSchedule(@PathVariable Long theaterId,
+                                            @AuthenticationPrincipal UserDetailsImpl userDetails,
             @Valid @RequestBody ScheduleCreateRequestDto requestDto) {
 
+        Long userId = userDetails.getUser().getId();
         scheduleService.createSchedule(theaterId, requestDto);
 
         return ApiResponse.onSuccess("상영 시간표 등록 성공");

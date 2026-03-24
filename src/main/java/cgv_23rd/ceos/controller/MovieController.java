@@ -5,12 +5,14 @@ import cgv_23rd.ceos.dto.movie.response.ActorResponseDto;
 import cgv_23rd.ceos.dto.movie.response.MovieDetailResponseDto;
 import cgv_23rd.ceos.dto.movie.response.MovieResponseDto;
 import cgv_23rd.ceos.global.apiPayload.ApiResponse;
+import cgv_23rd.ceos.global.security.UserDetailsImpl;
 import cgv_23rd.ceos.service.MovieService;
 import cgv_23rd.ceos.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,7 +27,9 @@ public class MovieController {
     // 1. 영화 생성
     @PostMapping("/")
     @Operation(summary = "영화 생성 API", description = "새로운 영화 정보를 등록함")
-    public ApiResponse<Long> createMovie(@Valid @RequestBody MovieRequestDto requestDto) {
+    public ApiResponse<Long> createMovie(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                         @Valid @RequestBody MovieRequestDto requestDto) {
+        Long userId = userDetails.getUser().getId();
         return ApiResponse.onSuccess("영화 생성 성공", movieService.createMovie(requestDto));
     }
 
@@ -55,7 +59,8 @@ public class MovieController {
     @Operation(summary = "영화 찜 토글 API", description = "영화 찜하기 또는 찜 취소 처리를 수행함")
     public ApiResponse<String> toggleMovieLike(
             @PathVariable(name = "movieId") Long movieId,
-            @RequestParam(name = "userId") Long userId) {
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Long userId = userDetails.getUser().getId();
         return ApiResponse.onSuccess("영화 찜/찜 취소 성공",movieService.toggleMovieLike(userId, movieId));
     }
 }

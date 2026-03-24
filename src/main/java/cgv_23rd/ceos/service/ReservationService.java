@@ -133,7 +133,7 @@ public class ReservationService {
 
         List<Reservation> reservations = reservationRepository.findAllByUserIdWithDetails(userId);
 
-        return user.getReservations().stream()
+        return reservations.stream()
                 .map(res -> ReservationResponseDto.builder()
                         .reservationId(res.getId())
                         .movieTitle(res.getMovieScreen().getMovie().getTitle())

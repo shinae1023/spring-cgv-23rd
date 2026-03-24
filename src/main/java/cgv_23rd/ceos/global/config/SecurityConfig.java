@@ -63,7 +63,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/auth/**").permitAll() // /api/v1/auth/ 하위 경로는 모두 허용
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // Swagger 허용
                 .requestMatchers("/", "/health-check").permitAll()
-                .requestMatchers("/").permitAll() // HomeController의 "/" 경로 허용
+                .requestMatchers("/").permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
                 .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
         );
 
