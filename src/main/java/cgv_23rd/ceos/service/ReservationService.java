@@ -63,7 +63,6 @@ public class ReservationService {
                 .user(user)
                 .movieScreen(movieScreen)
                 .status(ReservationStatus.완료)
-                .reserveDate(LocalDateTime.now())
                 .totalPrice(0)
                 .reservationSeats(new ArrayList<>())
                 .build();
@@ -150,7 +149,7 @@ public class ReservationService {
                                 .collect(Collectors.toList()))
                         .totalPrice(res.getTotalPrice())
                         .status(res.getStatus())
-                        .reserveDate(res.getReserveDate())
+                        .reservationAt(res.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
 

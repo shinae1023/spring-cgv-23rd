@@ -15,5 +15,5 @@ public record ReservationResponseDto(
         List<String> seatInfo,
         Integer totalPrice,
         ReservationStatus status,
-        LocalDateTime reserveDate
+        LocalDateTime reservationAt
 ) {}

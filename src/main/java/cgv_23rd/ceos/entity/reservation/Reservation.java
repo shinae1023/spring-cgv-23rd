@@ -1,5 +1,6 @@
 package cgv_23rd.ceos.entity.reservation;
 
+import cgv_23rd.ceos.entity.BaseEntity;
 import cgv_23rd.ceos.entity.enums.ReservationStatus;
 import cgv_23rd.ceos.entity.movie.MovieScreen;
 import cgv_23rd.ceos.entity.user.User;
@@ -15,7 +16,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class Reservation {
+public class Reservation extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,7 +30,6 @@ public class Reservation {
     private MovieScreen movieScreen;
 
     private Integer totalPrice;
-    private LocalDateTime reserveDate;
 
     @Enumerated(EnumType.STRING)
     private ReservationStatus status;
