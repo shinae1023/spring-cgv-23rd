@@ -7,6 +7,7 @@ import cgv_23rd.ceos.global.apiPayload.ApiResponse;
 import cgv_23rd.ceos.global.security.UserDetailsImpl;
 import cgv_23rd.ceos.service.admin.AdminMovieService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/admin/movies")
+@Tag(name = "어드민 영화 API")
 public class AdminMovieController {
 
     private final AdminMovieService adminMovieService;
