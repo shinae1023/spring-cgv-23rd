@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,44 +32,13 @@ public class ReservationService {
 
     // 1. 영화 예매
     public Long createReservation(Long userId, ReservationRequestDto requestDto) {
-        // 좌석 없는 예매 방지
-        if (requestDto.seatIds() == null || requestDto.seatIds().isEmpty()) {
-            throw new GeneralException(GeneralErrorCode.RESERVATION_SEAT_EMPTY);
-        }
+        validateSeatRequest(requestDto);
+        User user = getUser(userId);
 
-        // 요청 자체의 중복 좌석 검사
-        Set<Long> uniqueSeatIds = new HashSet<>(requestDto.seatIds());
-        if (uniqueSeatIds.size() != requestDto.seatIds().size()) {
-            throw new GeneralException(GeneralErrorCode.RESERVATION_SEAT_DUPLICATION);
-        }
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
-
-        MovieScreen movieScreen = movieScreenRepository.findById(requestDto.movieScreenId())
-                .orElseThrow(() -> new GeneralException(GeneralErrorCode.MOVIESCREEN_NOT_FOUND));
+        MovieScreen movieScreen = getMovieScreen(requestDto.movieScreenId());
 
         Reservation reservation = Reservation.create(user, movieScreen, LocalDateTime.now());
-
-        List<Long> sortedSeatIds = requestDto.seatIds().stream()
-                .sorted()
-                .toList();
-
-        for (Long seatId : sortedSeatIds) {
-            Seat seat = seatRepository.findByIdWithLock(seatId)
-                    .orElseThrow(() -> new GeneralException(GeneralErrorCode.SEAT_NOT_FOUND));
-
-            boolean isAlreadyReserved = reservationSeatRepository
-                    .existsByMovieScreenIdAndSeatIdAndReservation_StatusIn(
-                            movieScreen.getId(), seatId, List.of(ReservationStatus.완료, ReservationStatus.대기)
-                    );
-
-            if (isAlreadyReserved) {
-                throw new GeneralException(GeneralErrorCode.RESERVATION_SEAT_DUPLICATION);
-            }
-
-            reservation.addSeat(seat);
-        }
+        processSeatReservations(reservation, movieScreen.getId(), requestDto.seatIds());
 
         try {
             reservationRepository.save(reservation);
@@ -98,12 +66,6 @@ public class ReservationService {
         reservation.cancel(LocalDateTime.now());
     }
 
-    @Transactional(readOnly = true)
-    public Reservation getReservation(Long reservationId) {
-        return reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new GeneralException(GeneralErrorCode.RESERVATION_NOT_FOUND));
-    }
-
     @Transactional
     public Reservation getReservationWithLock(Long reservationId) {
         return reservationRepository.findByIdWithLock(reservationId)
@@ -129,24 +91,12 @@ public class ReservationService {
     // 3. 예매 내역 조회
     @Transactional(readOnly = true)
     public List<ReservationResponseDto> getReservationList(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
-
+        validateUserExists(userId);
         List<Reservation> reservations = reservationRepository.findAllByUserIdWithDetails(userId);
 
-        return reservations.stream()
-                .map(res -> ReservationResponseDto.builder()
-                        .reservationId(res.getId())
-                        .movieTitle(res.getMovieTitle())
-                        .theaterName(res.getTheaterName())
-                        .screenName(res.getScreenName())
-                        .startAt(res.getMovieScreen().getStartAt())
-                        .seatInfo(res.getSeatLabels())
-                        .totalPrice(res.getTotalPrice())
-                        .status(res.getStatus())
-                        .reservationAt(res.getCreatedAt())
-                        .build())
-                .collect(Collectors.toList());
+        return reservationRepository.findAllByUserIdWithDetails(userId).stream()
+                .map(this::toReservationResponse)
+                .toList();
     }
 
     private void validateOwner(Long userId, Reservation reservation) {
@@ -156,5 +106,69 @@ public class ReservationService {
         if (!reservation.isOwnedBy(userId)) {
             throw new GeneralException(GeneralErrorCode.FORBIDDEN);
         }
+    }
+
+    // --- Helper Methods ---
+    private User getUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
+    }
+
+    private void validateSeatRequest(ReservationRequestDto requestDto) {
+        // 좌석 없는 예매 방지
+        if (requestDto.seatIds() == null || requestDto.seatIds().isEmpty()) {
+            throw new GeneralException(GeneralErrorCode.RESERVATION_SEAT_EMPTY);
+        }
+
+        // 요청 자체의 중복 좌석 검사
+        Set<Long> uniqueSeatIds = new HashSet<>(requestDto.seatIds());
+        if (uniqueSeatIds.size() != requestDto.seatIds().size()) {
+            throw new GeneralException(GeneralErrorCode.RESERVATION_SEAT_DUPLICATION);
+        }
+    }
+
+    private void processSeatReservations(Reservation reservation, Long movieScreenId, List<Long> seatIds) {
+        List<Long> sortedSeatIds = seatIds.stream().sorted().toList();
+
+        for (Long seatId : sortedSeatIds) {
+            Seat seat = seatRepository.findByIdWithLock(seatId)
+                    .orElseThrow(() -> new GeneralException(GeneralErrorCode.SEAT_NOT_FOUND));
+
+            boolean isAlreadyReserved = reservationSeatRepository
+                    .existsByMovieScreenIdAndSeatIdAndReservation_StatusIn(
+                            movieScreenId, seatId, List.of(ReservationStatus.완료, ReservationStatus.대기)
+                    );
+
+            if (isAlreadyReserved) {
+                throw new GeneralException(GeneralErrorCode.RESERVATION_SEAT_DUPLICATION);
+            }
+
+            reservation.addSeat(seat);
+        }
+    }
+
+    private void validateUserExists(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new GeneralException(GeneralErrorCode.USER_NOT_FOUND);
+        }
+    }
+
+    private MovieScreen getMovieScreen(Long id) {
+        return movieScreenRepository.findById(id)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.MOVIESCREEN_NOT_FOUND));
+    }
+
+    private ReservationResponseDto toReservationResponse(Reservation res) {
+        return ReservationResponseDto.builder()
+                .reservationId(res.getId())
+                .movieTitle(res.getMovieTitle())
+                .theaterName(res.getTheaterName())
+                .screenName(res.getScreenName())
+                .startAt(res.getMovieScreen().getStartAt())
+                .seatInfo(res.getSeatLabels())
+                .totalPrice(res.getTotalPrice())
+                .status(res.getStatus())
+                .reservationAt(res.getCreatedAt())
+                .build();
     }
 }

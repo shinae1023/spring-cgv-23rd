@@ -66,19 +66,27 @@ public class ReviewService {
     // 2. 특정 영화 리뷰 조회
     @Transactional(readOnly = true)
     public List<ReviewResponseDto> getMovieReviews(Long movieId) {
-        if (!movieRepository.existsById(movieId)) {
-            throw new GeneralException(GeneralErrorCode.MOVIE_NOT_FOUND);
-        }
+        validateMovieExists(movieId);
 
         List<Review> reviews = reviewRepository.findAllByMovieId(movieId);
 
         return reviews.stream()
-                .map(review -> ReviewResponseDto.builder()
-                        .reviewId(review.getId())
-                        .username(review.getUser().getName())
-                        .rate(review.getRate())
-                        .content(review.getContent())
-                        .build())
+                .map(this::toReviewResponse)
                 .collect(Collectors.toList());
+    }
+
+    private void validateMovieExists(Long movieId) {
+        if (!movieRepository.existsById(movieId)) {
+            throw new GeneralException(GeneralErrorCode.MOVIE_NOT_FOUND);
+        }
+    }
+
+    private ReviewResponseDto toReviewResponse(Review review) {
+        return ReviewResponseDto.builder()
+                .reviewId(review.getId())
+                .username(review.getUser().getName())
+                .rate(review.getRate())
+                .content(review.getContent())
+                .build();
     }
 }

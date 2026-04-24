@@ -32,8 +32,7 @@ public class FoodOrderService {
 
     // 1. 음식 주문
     public Long createFoodOrder(Long userId, FoodOrderRequestDto requestDto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
+        User user = getUser(userId);
 
         Theater theater = theaterRepository.findById(requestDto.theaterId())
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.THEATER_NOT_FOUND));
@@ -83,27 +82,47 @@ public class FoodOrderService {
     // 2. 주문 내역 확인
     @Transactional(readOnly = true)
     public List<FoodOrderResponseDto> getFoodOrderList(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
+        validateUserExists(userId);
 
         List<FoodOrder> orders = foodOrderRepository.findAllByUserIdWithDetails(userId);
 
+        //foodOderItems 헬퍼 메서드를 반환하는 코드로 리팩토링
         return orders.stream()
-                .map(order -> FoodOrderResponseDto.builder()
-                        .orderId(order.getId())
-                        .theaterName(order.getTheater().getName())
-                        .totalPrice(order.getTotalPrice())
-                        .status(order.getStatus())
-                        .createdAt(order.getCreatedAt())
-                        .items(order.getFoodOrderItems().stream()
-                                .map(item -> FoodOrderItemResponseDto.builder()
-                                        .foodName(item.getFood().getName())
-                                        .quantity(item.getQuantity())
-                                        .price(item.getPrice())
-                                        .build())
-                                .collect(Collectors.toList()))
-                        .build())
+                .map(this::toFoodOrderResponse)
                 .collect(Collectors.toList());
     }
 
+    // Helper Method
+
+    private User getUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
+    }
+
+    private void validateUserExists(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new GeneralException(GeneralErrorCode.USER_NOT_FOUND);
+        }
+    }
+
+    private FoodOrderResponseDto toFoodOrderResponse(FoodOrder order) {
+        return FoodOrderResponseDto.builder()
+                .orderId(order.getId())
+                .theaterName(order.getTheater().getName())
+                .totalPrice(order.getTotalPrice())
+                .status(order.getStatus())
+                .createdAt(order.getCreatedAt())
+                .items(order.getFoodOrderItems().stream()
+                        .map(this::toFoodOrderItemResponse)
+                        .toList())
+                .build();
+    }
+
+    private FoodOrderItemResponseDto toFoodOrderItemResponse(FoodOrderItem item) {
+        return FoodOrderItemResponseDto.builder()
+                .foodName(item.getFood().getName())
+                .quantity(item.getQuantity())
+                .price(item.getPrice())
+                .build();
+    }
 }
