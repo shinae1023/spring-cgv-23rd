@@ -61,7 +61,6 @@ public class SecurityConfig {
 
         // API 경로별 접근 권한 설정
         http.authorizeHttpRequests((authorize) -> authorize
-                .requestMatchers("/api/v1/auth/**").permitAll() // /api/v1/auth/ 하위 경로는 모두 허용
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // Swagger 허용
                 .requestMatchers("/", "/health-check").permitAll()
                 .requestMatchers("/").permitAll()
