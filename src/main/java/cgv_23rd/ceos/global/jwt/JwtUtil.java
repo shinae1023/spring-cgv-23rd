@@ -15,7 +15,7 @@ import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
 
-@Slf4j(topic = "JwtUtil") // 로그 추가
+@Slf4j(topic = "JwtUtil")
 @Component
 public class JwtUtil {
 

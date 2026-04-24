@@ -52,22 +52,7 @@ public class ReservationService {
         MovieScreen movieScreen = movieScreenRepository.findById(requestDto.movieScreenId())
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.MOVIESCREEN_NOT_FOUND));
 
-        //이미 시작된 영화는 예매 불가
-        if (movieScreen.getStartAt().isBefore(LocalDateTime.now())) {
-            throw new GeneralException(GeneralErrorCode.MOVIE_ALREADY_STARTED);
-        }
-
-        Integer seatPrice = movieScreen.getScreen().getScreenType().getBasePrice();
-
-        Reservation reservation = Reservation.builder()
-                .user(user)
-                .movieScreen(movieScreen)
-                .status(ReservationStatus.완료)
-                .totalPrice(0)
-                .reservationSeats(new ArrayList<>())
-                .build();
-
-        int calculatedTotalPrice = 0;
+        Reservation reservation = Reservation.create(user, movieScreen,LocalDateTime.now());
 
         for (Long seatId : requestDto.seatIds()) {
             boolean isAlreadyReserved = reservationSeatRepository.existsByMovieScreenIdAndSeatIdAndReservation_Status(
@@ -80,22 +65,9 @@ public class ReservationService {
             Seat seat = seatRepository.findById(seatId)
                     .orElseThrow(() -> new GeneralException(GeneralErrorCode.SEAT_NOT_FOUND));
 
-            if (!seat.getScreen().getId().equals(movieScreen.getScreen().getId())) {
-                throw new GeneralException(GeneralErrorCode.SEAT_SCREEN_INVALID);
-            }
-
-            ReservationSeat reservationSeat = ReservationSeat.builder()
-                    .reservation(reservation)
-                    .seat(seat)
-                    .movieScreen(movieScreen)
-                    .price(seatPrice)
-                    .build();
-
-            reservation.getReservationSeats().add(reservationSeat);
-            calculatedTotalPrice += seatPrice;
+            reservation.addSeat(seat);
         }
 
-        reservation.updateTotalPrice(calculatedTotalPrice);
         reservationRepository.save(reservation);
     }
 
@@ -110,16 +82,6 @@ public class ReservationService {
         //예매 유저와 예매 취소 유저가 동일한지 확인
         if (!reservation.getUser().getId().equals(userId)) {
             throw new GeneralException(GeneralErrorCode.FORBIDDEN);
-        }
-
-        //이미 취소된 예매인지 확인
-        if (reservation.getStatus() == ReservationStatus.취소) {
-            throw new GeneralException(GeneralErrorCode.RESERVATION_ALREADY_CANCELED);
-        }
-
-        //이미 시작한 영화인지 확인
-        if (reservation.getMovieScreen().getStartAt().isBefore(LocalDateTime.now())) {
-            throw new GeneralException(GeneralErrorCode.MOVIE_ALREADY_STARTED);
         }
 
         reservation.cancel();
