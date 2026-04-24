@@ -86,7 +86,7 @@ public class ReservationService {
             throw new GeneralException(GeneralErrorCode.FORBIDDEN);
         }
 
-        reservation.cancel();
+        reservation.cancel(LocalDateTime.now());
     }
 
     // 3. 예매 내역 조회

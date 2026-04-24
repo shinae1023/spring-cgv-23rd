@@ -40,12 +40,7 @@ public class ReviewService {
             throw new GeneralException(GeneralErrorCode.REVIEW_ALREADY_EXISTS);
         }
 
-        Review review = Review.builder()
-                .user(user)
-                .movie(movie)
-                .rate(requestDto.rate())
-                .content(requestDto.content())
-                .build();
+        Review review = Review.create(user, movie, requestDto.rate(), requestDto.content());
 
         try {
             reviewRepository.save(review);

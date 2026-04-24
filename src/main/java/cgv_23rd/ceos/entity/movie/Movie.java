@@ -50,16 +50,6 @@ public class Movie {
     @OneToMany(mappedBy = "movie")
     private List<MovieActor> movieActors = new ArrayList<>();
 
-    //영화 생성 시 빈 통계 객체 생성을 위한 편의 method
-    public void createDefaultStatistics() {
-        this.movieStatistics = MovieStatistics.builder()
-                .movie(this)
-                .audienceCount(0)
-                .reservationRate(0.0)
-                .averageRating(0.0)
-                .reviewCount(0)
-                .build();
-    }
 
     public static Movie create(String title, String description, LocalDate openDate, LocalDate closeDate) {
         if (closeDate.isBefore(openDate)) {
@@ -94,8 +84,10 @@ public class Movie {
     private void initStatistics() {
         this.movieStatistics = MovieStatistics.builder()
                 .movie(this)
-                .reviewCount(0)
+                .audienceCount(0)
+                .reservationRate(0.0)
                 .averageRating(0.0)
+                .reviewCount(0)
                 .build();
     }
 }

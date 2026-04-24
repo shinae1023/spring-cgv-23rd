@@ -42,14 +42,13 @@ public class AuthService {
         String encodedPassword = passwordEncoder.encode(requestDto.password());
 
         // 유저 객체 생성 및 저장
-        User user = User.builder()
-                .email(requestDto.email())
-                .password(encodedPassword)
-                .name(requestDto.name())
-                .birth(requestDto.birth())
-                .phone(requestDto.phone())
-                .role(UserRole.USER)
-                .build();
+        User user = User.signup(
+                requestDto.name(),
+                requestDto.phone(),
+                requestDto.birth(),
+                requestDto.email(),
+                encodedPassword
+        );
         userRepository.save(user);
     }
 

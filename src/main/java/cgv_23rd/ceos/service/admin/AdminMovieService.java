@@ -66,32 +66,22 @@ public class AdminMovieService {
         Screen screen = screenRepository.findByIdWithLock(requestDto.screenId())
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.SCREEN_NOT_FOUND));
 
-        // 해당 상영관이 극장 내에 있는지 확인
-        if (!screen.getTheater().getId().equals(theaterId)) {
-            throw new GeneralException(GeneralErrorCode.SCREEN_THEATER_MISMATCH);
-        }
+        screen.validateBelongsTo(theaterId);
 
-        // 종료 시간이 시작 시간보다 빨라서는 안 됨
-        if (!requestDto.endAt().isAfter(requestDto.startAt())) {
-            throw new GeneralException(GeneralErrorCode.INVALID_SCHEDULE_TIME);
-        }
-
-        // 상영 시간 겹침 검증
         boolean isOverlapping = movieScreenRepository.existsOverlappingSchedule(
                 requestDto.screenId(), requestDto.startAt(), requestDto.endAt()
         );
-
         if (isOverlapping) {
             throw new GeneralException(GeneralErrorCode.SCHEDULE_OVERLAPPED);
         }
 
-        MovieScreen movieScreen = MovieScreen.builder()
-                .movie(movie)
-                .screen(screen)
-                .sequence(requestDto.sequence())
-                .startAt(requestDto.startAt())
-                .endAt(requestDto.endAt())
-                .build();
+        MovieScreen movieScreen = MovieScreen.create(
+                screen,
+                movie,
+                requestDto.sequence(),
+                requestDto.startAt(),
+                requestDto.endAt()
+        );
 
         movieScreenRepository.save(movieScreen);
     }

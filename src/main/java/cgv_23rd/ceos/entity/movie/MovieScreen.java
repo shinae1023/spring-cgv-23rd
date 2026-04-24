@@ -3,6 +3,8 @@ package cgv_23rd.ceos.entity.movie;
 import cgv_23rd.ceos.entity.theater.Screen;
 import cgv_23rd.ceos.entity.reservation.Reservation;
 import cgv_23rd.ceos.entity.reservation.ReservationSeat;
+import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
+import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -37,4 +39,24 @@ public class MovieScreen {
 
     @OneToMany(mappedBy = "movieScreen")
     private List<ReservationSeat> reservationSeats = new ArrayList<>();
+
+    public static MovieScreen create(
+            Screen screen,
+            Movie movie,
+            Integer sequence,
+            LocalDateTime startAt,
+            LocalDateTime endAt
+    ) {
+        if (!endAt.isAfter(startAt)) {
+            throw new GeneralException(GeneralErrorCode.INVALID_SCHEDULE_TIME);
+        }
+
+        return MovieScreen.builder()
+                .screen(screen)
+                .movie(movie)
+                .sequence(sequence)
+                .startAt(startAt)
+                .endAt(endAt)
+                .build();
+    }
 }

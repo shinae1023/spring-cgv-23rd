@@ -63,7 +63,4 @@ public class FoodOrder extends BaseEntity {
         this.totalPrice += itemTotalPrice;
     }
 
-    public void updateTotalPrice(int totalPrice) {
-        this.totalPrice = totalPrice;
-    }
 }

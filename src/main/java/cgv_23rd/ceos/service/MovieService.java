@@ -113,11 +113,7 @@ public class MovieService {
         MovieLike movieLike = movieLikeRepository.findMovieLikeByUserAndMovie(user,movie);
 
         if(movieLike==null){
-            movieLike = MovieLike.builder()
-                    .user(user)
-                    .movie(movie)
-                    .build();
-            movieLikeRepository.save(movieLike);
+            movieLikeRepository.save(MovieLike.of(user, movie));
             return "영화 id = " + movieId + " 찜 성공";
         }
         else{

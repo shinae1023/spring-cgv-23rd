@@ -7,9 +7,9 @@ import lombok.*;
 
 @Entity
 @Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 @Table(
         uniqueConstraints = {
                 @UniqueConstraint(name = "uk_user_movie_like", columnNames = {"user_id", "movie_id"})
@@ -27,4 +27,11 @@ public class MovieLike {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "movie_id", nullable = false)
     private Movie movie;
+
+    public static MovieLike of(User user, Movie movie) {
+        return MovieLike.builder()
+                .user(user)
+                .movie(movie)
+                .build();
+    }
 }

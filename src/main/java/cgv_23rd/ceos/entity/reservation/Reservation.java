@@ -10,6 +10,7 @@ import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,12 +57,12 @@ public class Reservation extends BaseEntity {
     }
 
     // 예매 취소 편의 메서드
-    public void cancel() {
+    public void cancel(LocalDateTime now) {
         if (this.status == ReservationStatus.취소) {
             throw new GeneralException(GeneralErrorCode.RESERVATION_ALREADY_CANCELED);
         }
 
-        if (this.movieScreen.getStartAt().isBefore(LocalDateTime.now())) {
+        if (this.movieScreen.getStartAt().isBefore(now)) {
             throw new GeneralException(GeneralErrorCode.MOVIE_ALREADY_STARTED);
         }
 
