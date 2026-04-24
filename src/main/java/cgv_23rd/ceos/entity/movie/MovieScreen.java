@@ -1,8 +1,8 @@
 package cgv_23rd.ceos.entity.movie;
 
-import cgv_23rd.ceos.entity.theater.Screen;
 import cgv_23rd.ceos.entity.reservation.Reservation;
 import cgv_23rd.ceos.entity.reservation.ReservationSeat;
+import cgv_23rd.ceos.entity.theater.Screen;
 import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import jakarta.persistence.*;

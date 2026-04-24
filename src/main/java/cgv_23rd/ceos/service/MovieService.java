@@ -1,23 +1,25 @@
 package cgv_23rd.ceos.service;
 
-import cgv_23rd.ceos.entity.enums.MovieStatus;
-import cgv_23rd.ceos.entity.like.MovieLike;
-import cgv_23rd.ceos.entity.movie.*;
-import cgv_23rd.ceos.entity.user.User;
-import cgv_23rd.ceos.dto.movie.request.MovieRequestDto;
 import cgv_23rd.ceos.dto.movie.response.ActorResponseDto;
 import cgv_23rd.ceos.dto.movie.response.MovieDetailResponseDto;
 import cgv_23rd.ceos.dto.movie.response.MovieResponseDto;
-import cgv_23rd.ceos.global.apiPayload.ApiResponse;
+import cgv_23rd.ceos.entity.enums.MovieStatus;
+import cgv_23rd.ceos.entity.like.MovieLike;
+import cgv_23rd.ceos.entity.movie.Movie;
+import cgv_23rd.ceos.entity.movie.MovieActor;
+import cgv_23rd.ceos.entity.movie.MovieImage;
+import cgv_23rd.ceos.entity.user.User;
 import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
-import cgv_23rd.ceos.repository.*;
+import cgv_23rd.ceos.repository.MovieActorRepository;
+import cgv_23rd.ceos.repository.MovieLikeRepository;
+import cgv_23rd.ceos.repository.MovieRepository;
+import cgv_23rd.ceos.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Service

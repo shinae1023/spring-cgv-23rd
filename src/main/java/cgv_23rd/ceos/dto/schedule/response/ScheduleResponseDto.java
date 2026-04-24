@@ -1,6 +1,7 @@
 package cgv_23rd.ceos.dto.schedule.response;
 
 import lombok.Builder;
+
 import java.time.LocalDateTime;
 
 @Builder

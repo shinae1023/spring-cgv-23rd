@@ -3,19 +3,19 @@ package cgv_23rd.ceos.service.admin;
 import cgv_23rd.ceos.dto.movie.request.MovieRequestDto;
 import cgv_23rd.ceos.dto.schedule.request.ScheduleCreateRequestDto;
 import cgv_23rd.ceos.dto.theater.request.TheaterRequestDto;
-import cgv_23rd.ceos.entity.enums.MovieStatus;
 import cgv_23rd.ceos.entity.movie.Movie;
 import cgv_23rd.ceos.entity.movie.MovieScreen;
 import cgv_23rd.ceos.entity.theater.Screen;
 import cgv_23rd.ceos.entity.theater.Theater;
 import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
-import cgv_23rd.ceos.repository.*;
+import cgv_23rd.ceos.repository.MovieRepository;
+import cgv_23rd.ceos.repository.MovieScreenRepository;
+import cgv_23rd.ceos.repository.ScreenRepository;
+import cgv_23rd.ceos.repository.TheaterRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor

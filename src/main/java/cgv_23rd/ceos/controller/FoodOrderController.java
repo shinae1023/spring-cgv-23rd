@@ -1,6 +1,5 @@
 package cgv_23rd.ceos.controller;
 
-import cgv_23rd.ceos.dto.food.request.FoodCreateRequestDto;
 import cgv_23rd.ceos.dto.food.request.FoodOrderRequestDto;
 import cgv_23rd.ceos.dto.food.response.FoodOrderResponseDto;
 import cgv_23rd.ceos.global.apiPayload.ApiResponse;

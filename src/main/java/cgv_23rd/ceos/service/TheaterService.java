@@ -1,13 +1,11 @@
 package cgv_23rd.ceos.service;
 
+import cgv_23rd.ceos.dto.theater.response.TheaterDetailResponseDto;
+import cgv_23rd.ceos.dto.theater.response.TheaterResponseDto;
 import cgv_23rd.ceos.entity.enums.Region;
 import cgv_23rd.ceos.entity.like.TheaterLike;
 import cgv_23rd.ceos.entity.theater.Theater;
 import cgv_23rd.ceos.entity.user.User;
-import cgv_23rd.ceos.dto.theater.request.TheaterRequestDto;
-import cgv_23rd.ceos.dto.theater.response.TheaterDetailResponseDto;
-import cgv_23rd.ceos.dto.theater.response.TheaterResponseDto;
-import cgv_23rd.ceos.global.apiPayload.ApiResponse;
 import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import cgv_23rd.ceos.repository.TheaterLikeRepository;

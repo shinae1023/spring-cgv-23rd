@@ -1,16 +1,12 @@
 package cgv_23rd.ceos.controller;
 
-import cgv_23rd.ceos.dto.schedule.request.ScheduleCreateRequestDto;
 import cgv_23rd.ceos.dto.schedule.response.ScheduleResponseDto;
 import cgv_23rd.ceos.global.apiPayload.ApiResponse;
-import cgv_23rd.ceos.global.security.UserDetailsImpl;
 import cgv_23rd.ceos.service.ScheduleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;

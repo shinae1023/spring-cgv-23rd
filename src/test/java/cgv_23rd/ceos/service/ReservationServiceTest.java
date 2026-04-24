@@ -1,5 +1,6 @@
 package cgv_23rd.ceos.service;
 
+import cgv_23rd.ceos.dto.reservation.request.ReservationRequestDto;
 import cgv_23rd.ceos.entity.movie.MovieScreen;
 import cgv_23rd.ceos.entity.reservation.Reservation;
 import cgv_23rd.ceos.entity.theater.Screen;
@@ -7,8 +8,6 @@ import cgv_23rd.ceos.entity.theater.ScreenType;
 import cgv_23rd.ceos.entity.theater.Seat;
 import cgv_23rd.ceos.entity.user.User;
 import cgv_23rd.ceos.entity.user.UserRole;
-import cgv_23rd.ceos.dto.reservation.request.ReservationRequestDto;
-import cgv_23rd.ceos.global.apiPayload.ApiResponse;
 import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import cgv_23rd.ceos.repository.*;
@@ -25,10 +24,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class ReservationServiceTest {

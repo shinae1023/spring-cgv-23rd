@@ -1,9 +1,9 @@
 package cgv_23rd.ceos.entity.theater;
 
+import cgv_23rd.ceos.entity.enums.Region;
 import cgv_23rd.ceos.entity.food.FoodOrder;
 import cgv_23rd.ceos.entity.food.TheaterFood;
 import cgv_23rd.ceos.entity.like.TheaterLike;
-import cgv_23rd.ceos.entity.enums.Region;
 import jakarta.persistence.*;
 import lombok.*;
 

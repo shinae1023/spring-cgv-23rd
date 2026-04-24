@@ -1,15 +1,14 @@
 package cgv_23rd.ceos.service;
 
-import cgv_23rd.ceos.entity.enums.FoodOrderStatus;
-import cgv_23rd.ceos.entity.food.*;
-import cgv_23rd.ceos.entity.theater.Theater;
-import cgv_23rd.ceos.entity.user.User;
-import cgv_23rd.ceos.dto.food.request.FoodCreateRequestDto;
 import cgv_23rd.ceos.dto.food.request.FoodOrderItemRequestDto;
 import cgv_23rd.ceos.dto.food.request.FoodOrderRequestDto;
 import cgv_23rd.ceos.dto.food.response.FoodOrderItemResponseDto;
 import cgv_23rd.ceos.dto.food.response.FoodOrderResponseDto;
-import cgv_23rd.ceos.global.apiPayload.ApiResponse;
+import cgv_23rd.ceos.entity.food.Food;
+import cgv_23rd.ceos.entity.food.FoodOrder;
+import cgv_23rd.ceos.entity.food.TheaterFood;
+import cgv_23rd.ceos.entity.theater.Theater;
+import cgv_23rd.ceos.entity.user.User;
 import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import cgv_23rd.ceos.repository.*;
@@ -17,8 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

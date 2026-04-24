@@ -1,12 +1,10 @@
 package cgv_23rd.ceos.service;
 
-import cgv_23rd.ceos.entity.movie.Movie;
-import cgv_23rd.ceos.entity.movie.MovieStatistics;
-import cgv_23rd.ceos.entity.movie.Review;
-import cgv_23rd.ceos.entity.user.User;
 import cgv_23rd.ceos.dto.review.request.ReviewRequestDto;
 import cgv_23rd.ceos.dto.review.response.ReviewResponseDto;
-import cgv_23rd.ceos.global.apiPayload.ApiResponse;
+import cgv_23rd.ceos.entity.movie.Movie;
+import cgv_23rd.ceos.entity.movie.Review;
+import cgv_23rd.ceos.entity.user.User;
 import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import cgv_23rd.ceos.repository.MovieRepository;

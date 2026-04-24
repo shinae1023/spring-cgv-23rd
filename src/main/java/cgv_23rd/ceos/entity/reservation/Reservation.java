@@ -10,7 +10,6 @@ import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

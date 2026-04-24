@@ -1,15 +1,12 @@
 package cgv_23rd.ceos.entity.food;
 
 import cgv_23rd.ceos.entity.BaseEntity;
-import cgv_23rd.ceos.entity.theater.Theater;
 import cgv_23rd.ceos.entity.enums.FoodOrderStatus;
+import cgv_23rd.ceos.entity.theater.Theater;
 import cgv_23rd.ceos.entity.user.User;
-import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
-import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 

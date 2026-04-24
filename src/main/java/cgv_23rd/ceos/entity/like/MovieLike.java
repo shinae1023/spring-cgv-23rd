@@ -1,7 +1,7 @@
 package cgv_23rd.ceos.entity.like;
 
-import cgv_23rd.ceos.entity.user.User;
 import cgv_23rd.ceos.entity.movie.Movie;
+import cgv_23rd.ceos.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 

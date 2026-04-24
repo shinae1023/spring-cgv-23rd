@@ -1,12 +1,8 @@
 package cgv_23rd.ceos.service;
 
-import cgv_23rd.ceos.entity.movie.Movie;
-import cgv_23rd.ceos.entity.movie.MovieScreen;
-import cgv_23rd.ceos.entity.theater.Screen;
-import cgv_23rd.ceos.entity.theater.Theater;
-import cgv_23rd.ceos.dto.schedule.request.ScheduleCreateRequestDto;
 import cgv_23rd.ceos.dto.schedule.response.ScheduleResponseDto;
-import cgv_23rd.ceos.global.apiPayload.ApiResponse;
+import cgv_23rd.ceos.entity.movie.MovieScreen;
+import cgv_23rd.ceos.entity.theater.Theater;
 import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import cgv_23rd.ceos.repository.MovieRepository;

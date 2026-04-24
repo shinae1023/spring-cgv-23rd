@@ -1,6 +1,7 @@
 package cgv_23rd.ceos.dto.schedule.request;
 
 import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDateTime;
 
 public record ScheduleCreateRequestDto(
