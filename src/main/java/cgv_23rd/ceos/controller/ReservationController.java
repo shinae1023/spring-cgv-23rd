@@ -1,0 +1,60 @@
+package cgv_23rd.ceos.controller;
+
+import cgv_23rd.ceos.dto.reservation.request.ReservationRequestDto;
+import cgv_23rd.ceos.dto.reservation.response.ReservationResponseDto;
+import cgv_23rd.ceos.global.apiPayload.ApiResponse;
+import cgv_23rd.ceos.global.security.UserDetailsImpl;
+import cgv_23rd.ceos.service.ReservationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/reservations")
+@Tag(name = "예약 API")
+public class ReservationController {
+
+    private final ReservationService reservationService;
+
+    // 1. 영화 예매
+    @PostMapping("")
+    @Operation(summary = "영화 예매 API", description = "상영 회차와 좌석을 선택하여 영화를 예매함")
+    public ApiResponse<Void> createReservation(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @Valid @RequestBody ReservationRequestDto requestDto) {
+
+        Long userId = userDetails.getUser().getId();
+        reservationService.createReservation(userId, requestDto);
+
+        return ApiResponse.onSuccess("영화 예매 성공");
+    }
+
+    // 2. 영화 예매 취소
+    @PostMapping("/{reservationId}/cancel")
+    @Operation(summary = "영화 예매 취소 API", description = "예매 상태를 취소로 변경함")
+    public ApiResponse<Void> cancelReservation(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable Long reservationId) {
+
+        Long userId = userDetails.getUser().getId();
+        reservationService.cancelReservation(userId, reservationId);
+
+        return ApiResponse.onSuccess("영화 예매 취소 성공");
+    }
+
+    // 3. 예매 내역 조회
+    @GetMapping("")
+    @Operation(summary = "예매 내역 조회 API", description = "특정 유저의 전체 예매 내역 리스트를 조회함")
+    public ApiResponse<List<ReservationResponseDto>> getReservationList(
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        Long userId = userDetails.getUser().getId();
+        return ApiResponse.onSuccess("예매 내역 조회 성공",reservationService.getReservationList(userId));
+    }
+}
