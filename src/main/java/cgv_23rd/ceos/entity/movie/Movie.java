@@ -74,7 +74,7 @@ public class Movie {
         else this.status = MovieStatus.상영중;
     }
 
-    // 3. 리뷰 등록 시 통계 업데이트를 엔티티가 관리
+    // 리뷰 등록 시 통계 업데이트를 엔티티가 관리
     public void registerReview(double rating) {
         if (this.movieStatistics != null) {
             this.movieStatistics.addReviewRating(rating);

@@ -1,11 +1,12 @@
 package cgv_23rd.ceos.dto.user.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 import java.time.LocalDate;
 
 public record SignupRequestDto(@NotBlank String name, @NotBlank String email,
-                               @NotBlank LocalDate birth, @NotBlank String phone,
+                               @NotNull LocalDate birth, @NotBlank String phone,
                                @NotBlank String password) {
 }

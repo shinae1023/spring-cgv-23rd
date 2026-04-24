@@ -67,7 +67,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN") // admin 경로 권한설정
                 .requestMatchers(HttpMethod.GET,"/api/reviews/**").permitAll()
-                .requestMatchers(HttpMethod.GET,"/api/movies**").permitAll()
+                .requestMatchers(HttpMethod.GET,"/api/movies/**").permitAll()
+                .requestMatchers(HttpMethod.GET,"/api/movies").permitAll()
                 .requestMatchers(HttpMethod.GET,"/api/reviews/movie/**").permitAll()
                 .requestMatchers(HttpMethod.GET,"/api/schedules/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/theaters/**").permitAll()
