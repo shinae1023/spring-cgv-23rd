@@ -40,41 +40,22 @@ public class FoodOrderService {
         Theater theater = theaterRepository.findById(requestDto.theaterId())
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.THEATER_NOT_FOUND));
 
-        FoodOrder foodOrder = FoodOrder.builder()
-                .user(user)
-                .theater(theater)
-                .status(FoodOrderStatus.완료)
-                .foodOrderItems(new ArrayList<>())
-                .build();
-
-        int totalOrderPrice = 0;
+        FoodOrder foodOrder = FoodOrder.create(user, theater);
 
         for (FoodOrderItemRequestDto itemDto : requestDto.items()) {
             Food food = foodRepository.findById(itemDto.foodId())
                     .orElseThrow(() -> new GeneralException(GeneralErrorCode.FOOD_NOT_FOUND));
 
-            // DB 레벨에서 즉시 차감
-            int updatedCount = theaterFoodRepository.decreaseStock(theater, food, itemDto.quantity());
+            // 재고 엔티티를 락 걸고 조회하여 직접 차감
+            TheaterFood theaterFood = theaterFoodRepository.findByTheaterAndFoodWithLock(theater, food)
+                    .orElseThrow(() -> new GeneralException(GeneralErrorCode.THEATER_FOOD_NOT_FOUND));
 
-            // 업데이트된 행이 없다면 재고 부족
-            if (updatedCount == 0) {
-                throw new GeneralException(GeneralErrorCode.OUT_OF_STOCK, food.getName() + "의 재고가 부족합니다.");
-            }
+            theaterFood.decreaseStock(itemDto.quantity());
 
-            int itemTotalPrice = food.getPrice() * itemDto.quantity();
-            totalOrderPrice += itemTotalPrice;
-
-            FoodOrderItem orderItem = FoodOrderItem.builder()
-                    .foodOrder(foodOrder)
-                    .food(food)
-                    .quantity(itemDto.quantity())
-                    .price(itemTotalPrice)
-                    .build();
-
-            foodOrder.getFoodOrderItems().add(orderItem);
+            // 주문에 항목 추가
+            foodOrder.addItem(food, itemDto.quantity());
         }
 
-        foodOrder.updateTotalPrice(totalOrderPrice);
         foodOrderRepository.save(foodOrder);
 
     }
