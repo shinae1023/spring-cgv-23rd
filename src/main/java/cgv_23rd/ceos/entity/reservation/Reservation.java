@@ -86,4 +86,22 @@ public class Reservation extends BaseEntity {
         this.reservationSeats.add(reservationSeat);
         this.totalPrice += price;
     }
+
+    public String getMovieTitle() {
+        return this.movieScreen.getMovie().getTitle();
+    }
+
+    public String getTheaterName() {
+        return this.movieScreen.getScreen().getTheater().getName();
+    }
+
+    public List<String> getSeatLabels() {
+        return this.reservationSeats.stream()
+                .map(rs -> rs.getSeat().getRowName() + rs.getSeat().getColNum())
+                .toList();
+    }
+
+    public String getScreenName() {
+        return this.movieScreen.getScreen().getName();
+    }
 }

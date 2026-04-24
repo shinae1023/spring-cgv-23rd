@@ -55,6 +55,7 @@ public class AdminMovieService {
     }
 
     // 1. 극장별 상영 시간표 등록
+    @Transactional
     public void createSchedule(Long theaterId, ScheduleCreateRequestDto requestDto) {
         Theater theater = theaterRepository.findById(theaterId)
                 .orElseThrow(()-> new GeneralException(GeneralErrorCode.THEATER_NOT_FOUND));

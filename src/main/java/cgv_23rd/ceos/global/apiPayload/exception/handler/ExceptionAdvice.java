@@ -74,21 +74,21 @@ public class ExceptionAdvice {
                 .body(ApiResponse.onFailure(GeneralErrorCode.INVALID_PARAMETER, "입력값이 잘못되었습니다. (JSON 형식을 확인해주세요)"));
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Object>> handleException(Exception e) {
-        log.warn("Exception: {}", e.getMessage());
-        BaseErrorCode code = GeneralErrorCode.INTERNAL_SERVER_ERROR;
-        return ResponseEntity
-                .status(code.getHttpStatus())
-                .body(ApiResponse.onFailure(code, e.getMessage()));
-    }
-
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Object>> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
         log.warn("DataIntegrityViolationException: {}", e.getMessage());
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.onFailure(GeneralErrorCode.INVALID_PARAMETER, "이미 처리되었거나 중복된 요청입니다."));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Object>> handleException(Exception e) {
+        log.warn("Exception: {}", e.getMessage());
+        BaseErrorCode code = GeneralErrorCode.INTERNAL_SERVER_ERROR;
+        return ResponseEntity
+                .status(code.getHttpStatus())
+                .body(ApiResponse.onFailure(code, code.getMessage()));
     }
 
 }

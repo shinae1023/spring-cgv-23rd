@@ -75,7 +75,7 @@ public class AuthService {
         }
         else {
             RefreshToken newRefreshToken = RefreshToken.builder()
-                    .userId(user.getId())
+                    .user(user)
                     .token(refreshToken)
                     .build();
             refreshTokenRepository.save(newRefreshToken);
@@ -91,34 +91,24 @@ public class AuthService {
     @Transactional
     public ReissueResponseDto reissueToken(ReissueRequestDto reissueRequestDto) {
 
-        // 1. Refresh Token 유효성 검증
-        if (!jwtUtil.validateToken(reissueRequestDto.refreshToken())) {
-            throw new GeneralException(GeneralErrorCode.INVALID_TOKEN);
-        }
+        RefreshToken token = refreshTokenRepository.findByToken(reissueRequestDto.refreshToken())
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.INVALID_TOKEN));
 
-        // 만료된 Access Token에서 유저 정보 추출
+        // 소유자 검증 (서비스가 직접 ID를 대조하지 않고 엔티티에게 물어봄)
         Claims accessClaims = jwtUtil.getClaimsFromExpiredToken(reissueRequestDto.accessToken());
         Long accessUserId = accessClaims.get("userId", Long.class);
 
-        // 2. DB에서 Refresh Token 조회
-        RefreshToken token = refreshTokenRepository.findByToken(reissueRequestDto.refreshToken())
-                .orElseThrow(() -> new GeneralException(GeneralErrorCode.INVALID_TOKEN, "DB에 존재하지 않는 리프레시 토큰입니다."));
-
-        // Access Token의 유저와 Refresh Token의 소유주가 일치하는지 검증
-        if (accessUserId == null || !accessUserId.equals(token.getUserId())) {
+        if (!token.isOwnedBy(accessUserId)) {
             throw new GeneralException(GeneralErrorCode.INVALID_TOKEN, "토큰 정보가 일치하지 않습니다.");
         }
 
-        // 3. 토큰에 연결된 유저 정보 조회
-        User user = userRepository.findById(token.getUserId())
-                .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
-
-        String newAccessToken = jwtUtil.createAccessToken(user.getEmail(),user.getId());
+        // 토큰 재발급
+        User user = token.getUser();
+        String newAccessToken = jwtUtil.createAccessToken(user.getEmail(), user.getId());
         String newRefreshToken = jwtUtil.createRefreshToken(user.getEmail());
 
-        token.updateToken(newRefreshToken);
+        token.rotate(newRefreshToken);
 
-        // 새로운 토큰 DTO에 담아 반환
         return ReissueResponseDto.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)

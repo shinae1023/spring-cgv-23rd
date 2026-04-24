@@ -9,6 +9,7 @@ import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import cgv_23rd.ceos.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +22,7 @@ public class AdminFoodService {
     private final TheaterFoodRepository theaterFoodRepository;
 
     //음식 등록
+    @Transactional
     public void createFood(FoodCreateRequestDto requestDto) {
 
         Food food = Food.builder()

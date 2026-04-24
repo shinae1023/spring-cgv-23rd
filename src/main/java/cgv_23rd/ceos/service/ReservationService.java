@@ -3,12 +3,10 @@ package cgv_23rd.ceos.service;
 import cgv_23rd.ceos.entity.enums.ReservationStatus;
 import cgv_23rd.ceos.entity.movie.MovieScreen;
 import cgv_23rd.ceos.entity.reservation.Reservation;
-import cgv_23rd.ceos.entity.reservation.ReservationSeat;
 import cgv_23rd.ceos.entity.theater.Seat;
 import cgv_23rd.ceos.entity.user.User;
 import cgv_23rd.ceos.dto.reservation.request.ReservationRequestDto;
 import cgv_23rd.ceos.dto.reservation.response.ReservationResponseDto;
-import cgv_23rd.ceos.global.apiPayload.ApiResponse;
 import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import cgv_23rd.ceos.repository.*;
@@ -17,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -98,13 +95,11 @@ public class ReservationService {
         return reservations.stream()
                 .map(res -> ReservationResponseDto.builder()
                         .reservationId(res.getId())
-                        .movieTitle(res.getMovieScreen().getMovie().getTitle())
-                        .theaterName(res.getMovieScreen().getScreen().getTheater().getName())
-                        .screenName(res.getMovieScreen().getScreen().getName())
+                        .movieTitle(res.getMovieTitle())
+                        .theaterName(res.getTheaterName())
+                        .screenName(res.getScreenName())
                         .startAt(res.getMovieScreen().getStartAt())
-                        .seatInfo(res.getReservationSeats().stream()
-                                .map(rs -> rs.getSeat().getRowName() + rs.getSeat().getColNum())
-                                .collect(Collectors.toList()))
+                        .seatInfo(res.getSeatLabels())
                         .totalPrice(res.getTotalPrice())
                         .status(res.getStatus())
                         .reservationAt(res.getCreatedAt())
