@@ -13,6 +13,7 @@ import cgv_23rd.ceos.repository.MovieRepository;
 import cgv_23rd.ceos.repository.ReviewRepository;
 import cgv_23rd.ceos.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,8 +47,11 @@ public class ReviewService {
                 .content(requestDto.content())
                 .build();
 
-        reviewRepository.save(review);
-
+        try {
+            reviewRepository.save(review);
+        } catch (DataIntegrityViolationException e) {
+            throw new GeneralException(GeneralErrorCode.REVIEW_ALREADY_EXISTS);
+        }
         // 리뷰 등록 후 영화 통계 업데이트 (업데이트는 영화 엔티티 담당)
         movie.registerReview(requestDto.rate());
     }

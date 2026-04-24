@@ -11,6 +11,7 @@ import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import cgv_23rd.ceos.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,7 +66,11 @@ public class ReservationService {
             reservation.addSeat(seat);
         }
 
-        reservationRepository.save(reservation);
+        try {
+            reservationRepository.save(reservation);
+        } catch (DataIntegrityViolationException e) {
+            throw new GeneralException(GeneralErrorCode.RESERVATION_SEAT_DUPLICATION);
+        }
     }
 
     // 2. 영화 예매 취소

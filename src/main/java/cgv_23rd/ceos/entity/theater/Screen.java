@@ -26,6 +26,7 @@ public class Screen {
     @JoinColumn(name = "screen_type_id", nullable = false)
     private ScreenType screenType;
 
+    @Column(nullable = false)
     private String name;
     private Integer totalSeat;
 

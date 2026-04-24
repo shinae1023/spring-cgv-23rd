@@ -66,7 +66,9 @@ public class FoodOrderService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
 
-        List<FoodOrderResponseDto> responseDtos = user.getFoodOrders().stream()
+        List<FoodOrder> orders = foodOrderRepository.findAllByUserIdWithDetails(userId);
+
+        return orders.stream()
                 .map(order -> FoodOrderResponseDto.builder()
                         .orderId(order.getId())
                         .theaterName(order.getTheater().getName())
@@ -82,8 +84,6 @@ public class FoodOrderService {
                                 .collect(Collectors.toList()))
                         .build())
                 .collect(Collectors.toList());
-
-        return responseDtos;
     }
 
 }
