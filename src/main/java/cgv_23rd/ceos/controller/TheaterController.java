@@ -39,12 +39,22 @@ public class TheaterController {
     }
 
     // 3. 영화관 찜
-    @PostMapping("/{theaterId}/like")
-    @Operation(summary = "영화관 찜 토글 API", description = "영화관 찜하기 또는 찜 취소 처리를 수행함")
-    public ApiResponse<String> toggleTheaterLike(
-            @PathVariable(name = "theaterId") Long theaterId,
+    @PostMapping("/{theaterId}/likes")
+    @Operation(summary = "영화관 찜하기 API", description = "사용자가 특정 영화관을 찜하도록 처리함")
+    public ApiResponse<Void> likeTheater(
+            @PathVariable Long theaterId,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        Long userId = userDetails.getUser().getId();
-        return ApiResponse.onSuccess("영화관 찜 성공",theaterService.toggleTheaterLike(userId, theaterId));
+        theaterService.likeTheater(userDetails.getUser().getId(), theaterId);
+        return ApiResponse.onSuccess("영화관 찜 성공");
     }
+
+    @DeleteMapping("/{theaterId}/likes")
+    @Operation(summary = "영화관 찜 취소 API", description = "사용자가 특정 영화관에 대한 찜을 취소하도록 처리함")
+    public ApiResponse<Void> unlikeTheater(
+            @PathVariable Long theaterId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        theaterService.unlikeTheater(userDetails.getUser().getId(), theaterId);
+        return ApiResponse.onSuccess("영화관 찜 취소 성공");
+    }
+
 }

@@ -14,6 +14,10 @@ import cgv_23rd.ceos.repository.ReviewRepository;
 import cgv_23rd.ceos.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +33,11 @@ public class ReviewService {
     private final MovieRepository movieRepository;
 
     // 1. 리뷰 생성
+    @Retryable(
+            retryFor = ObjectOptimisticLockingFailureException.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 50)
+    )
     public void createReview(Long userId, ReviewRequestDto requestDto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
@@ -47,8 +56,13 @@ public class ReviewService {
         } catch (DataIntegrityViolationException e) {
             throw new GeneralException(GeneralErrorCode.REVIEW_ALREADY_EXISTS);
         }
-        // 리뷰 등록 후 영화 통계 업데이트 (업데이트는 영화 엔티티 담당)
+
         movie.registerReview(requestDto.rate());
+    }
+
+    @Recover
+    public void recoverReviewCreate(ObjectOptimisticLockingFailureException e, Long userId, ReviewRequestDto requestDto) {
+        throw new GeneralException(GeneralErrorCode.INTERNAL_SERVER_ERROR, "리뷰 저장 충돌이 발생했습니다. 다시 시도해주세요.");
     }
 
     // 2. 특정 영화 리뷰 조회

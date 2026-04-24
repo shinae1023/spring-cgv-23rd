@@ -52,16 +52,22 @@ public class ReservationService {
 
         Reservation reservation = Reservation.create(user, movieScreen,LocalDateTime.now());
 
-        for (Long seatId : requestDto.seatIds()) {
-            boolean isAlreadyReserved = reservationSeatRepository.existsByMovieScreenIdAndSeatIdAndReservation_Status(
-                    movieScreen.getId(), seatId, ReservationStatus.완료
-            );
+        List<Long> sortedSeatIds = requestDto.seatIds().stream()
+                .sorted()
+                .toList();
+
+        for (Long seatId : sortedSeatIds) {
+            Seat seat = seatRepository.findByIdWithLock(seatId)
+                    .orElseThrow(() -> new GeneralException(GeneralErrorCode.SEAT_NOT_FOUND));
+
+            boolean isAlreadyReserved = reservationSeatRepository
+                    .existsByMovieScreenIdAndSeatIdAndReservation_Status(
+                            movieScreen.getId(), seatId, ReservationStatus.완료
+                    );
+
             if (isAlreadyReserved) {
                 throw new GeneralException(GeneralErrorCode.RESERVATION_SEAT_DUPLICATION);
             }
-
-            Seat seat = seatRepository.findById(seatId)
-                    .orElseThrow(() -> new GeneralException(GeneralErrorCode.SEAT_NOT_FOUND));
 
             reservation.addSeat(seat);
         }

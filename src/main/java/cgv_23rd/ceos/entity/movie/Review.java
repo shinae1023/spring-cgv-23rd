@@ -30,6 +30,9 @@ public class Review {
     private Double rate;
     private String content;
 
+    @Version
+    private Long version;
+
     public static Review create(User user, Movie movie, Double rate, String content) {
         return Review.builder()
                 .user(user)

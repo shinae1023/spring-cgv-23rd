@@ -13,6 +13,7 @@ import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import cgv_23rd.ceos.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -102,24 +103,37 @@ public class MovieService {
 
     // 5. 영화 찜
     @Transactional
-    public String toggleMovieLike(Long userId, Long movieId){
+    public void likeMovie(Long userId, Long movieId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(()-> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
-
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
 
         Movie movie = movieRepository.findById(movieId)
-                .orElseThrow(()-> new GeneralException(GeneralErrorCode.MOVIE_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.MOVIE_NOT_FOUND));
 
-        MovieLike movieLike = movieLikeRepository.findMovieLikeByUserAndMovie(user,movie);
-
-        if(movieLike==null){
-            movieLikeRepository.save(MovieLike.of(user, movie));
-            return "영화 id = " + movieId + " 찜 성공";
+        if (movieLikeRepository.findMovieLikeByUserAndMovie(user, movie) != null) {
+            return;
         }
-        else{
-            movieLikeRepository.delete(movieLike);
-            return "영화 id = " + movieId + " 찜 삭제 성공";
+
+        try {
+            movieLikeRepository.save(MovieLike.of(user, movie));
+        } catch (DataIntegrityViolationException e) {
+            // 이미 찜한 상태면 idempotent 하게 성공 처리
         }
     }
+
+    @Transactional
+    public void unlikeMovie(Long userId, Long movieId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
+
+        Movie movie = movieRepository.findById(movieId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.MOVIE_NOT_FOUND));
+
+        MovieLike movieLike = movieLikeRepository.findMovieLikeByUserAndMovie(user, movie);
+        if (movieLike != null) {
+            movieLikeRepository.delete(movieLike);
+        }
+    }
+
 
 }

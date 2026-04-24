@@ -13,6 +13,9 @@ public class MovieStatistics {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    private Long version;
+
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
     @JoinColumn(name = "movie_id", nullable = false, unique = true)
