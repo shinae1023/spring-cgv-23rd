@@ -18,10 +18,11 @@ public class FoodPaymentFacade {
 
     private final FoodOrderService foodOrderService;
     private final PaymentService paymentService;
+    private final PaymentCompensationService paymentCompensationService;
 
     @Transactional
-    public PaymentResultDto processPayment(Long orderId) {
-        FoodOrder order = foodOrderService.getFoodOrder(orderId);
+    public PaymentResultDto processPayment(Long userId ,Long orderId) {
+        FoodOrder order = foodOrderService.getOwnedFoodOrderWithLock(userId, orderId);
 
         // 매점 결제용 고유 paymentId 생성
         String paymentId = "FOOD_" + orderId + "_" + UUID.randomUUID().toString().substring(0, 8);
@@ -52,10 +53,10 @@ public class FoodPaymentFacade {
             }
 
         } catch (GeneralException e) {
-            foodOrderService.cancelOrder(order);
+            paymentCompensationService.cancelFoodOrder(order.getId());
             throw e;
         } catch (Exception e) {
-            foodOrderService.cancelOrder(order);
+            paymentCompensationService.cancelFoodOrder(order.getId());
             throw new GeneralException(GeneralErrorCode.PAYMENT_FAILED);
         }
     }

@@ -59,6 +59,20 @@ public class FoodOrderService {
     }
 
     @Transactional
+    public FoodOrder getOwnedFoodOrderWithLock(Long userId, Long orderId) {
+        FoodOrder order = foodOrderRepository.findByIdWithLock(orderId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.FOOD_ORDER_NOT_FOUND));
+
+        validateUserExists(userId);
+
+        if (!order.isOwnedBy(userId)) {
+            throw new GeneralException(GeneralErrorCode.FORBIDDEN);
+        }
+
+        return order;
+    }
+
+    @Transactional
     public void confirmOrderAndDeductStock(FoodOrder foodOrder) {
         for (FoodOrderItem item : foodOrder.getFoodOrderItems()) {
             // 비관적 락으로 재고 조회하여 동시성 제어

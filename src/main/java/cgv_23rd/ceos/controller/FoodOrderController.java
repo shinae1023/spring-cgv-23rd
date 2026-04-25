@@ -37,11 +37,12 @@ public class FoodOrderController {
     @PostMapping("/{orderId}/payments")
     @Operation(summary = "매점 주문 결제 API", description = "주문한 매점 음식에 대해 결제를 진행함. 결제 성공 시 재고 차감, 재고 부족 시 환불 처리")
     public ApiResponse<PaymentResultDto> processFoodPayment(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long orderId) {
 
-        // 파사드를 통해 결제 요청 -> 성공 시 락 걸고 재고 차감 -> 재고 부족 시 환불 처리
-        PaymentResultDto result = foodPaymentFacade.processPayment(orderId);
-        return ApiResponse.onSuccess("음식 주문 결제 성공",result);
+        Long userId = userDetails.getUser().getId();
+        PaymentResultDto result = foodPaymentFacade.processPayment(userId, orderId);
+        return ApiResponse.onSuccess("음식 주문 결제 성공", result);
     }
 
     @GetMapping("/")

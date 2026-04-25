@@ -19,6 +19,7 @@ public class ReservationPaymentFacade {
 
     private final ReservationService reservationService;
     private final PaymentService paymentService;
+    private final PaymentCompensationService paymentCompensationService;
 
     @Transactional
     public PaymentResultDto processPayment(Long userId, Long reservationId) {
@@ -48,14 +49,14 @@ public class ReservationPaymentFacade {
                 return new PaymentResultDto(true, "결제가 완료되었습니다.");
             } catch (RuntimeException e) {
                 paymentService.cancelPayment(paymentId);
-                reservationService.rollbackReservation(reservation);
+                paymentCompensationService.cancelReservation(reservation.getId());
                 throw e;
             }
         } catch (GeneralException e) {
-            reservationService.rollbackReservation(reservation);
+            paymentCompensationService.cancelReservation(reservation.getId());
             throw e;
         } catch (Exception e) {
-            reservationService.rollbackReservation(reservation);
+            paymentCompensationService.cancelReservation(reservation.getId());
             throw new GeneralException(GeneralErrorCode.PAYMENT_FAILED, "결제 처리 중 알 수 없는 오류가 발생했습니다.");
         }
     }

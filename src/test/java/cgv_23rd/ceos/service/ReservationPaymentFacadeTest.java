@@ -12,6 +12,7 @@ import cgv_23rd.ceos.entity.user.User;
 import cgv_23rd.ceos.entity.user.UserRole;
 import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
+import cgv_23rd.ceos.service.pay.PaymentCompensationService;
 import cgv_23rd.ceos.service.pay.PaymentService;
 import cgv_23rd.ceos.service.pay.ReservationPaymentFacade;
 import org.junit.jupiter.api.DisplayName;
@@ -44,6 +45,9 @@ class ReservationPaymentFacadeTest {
     @Mock
     private PaymentService paymentService;
 
+    @Mock
+    private PaymentCompensationService paymentCompensationService;
+
     @Test
     @DisplayName("결제 성공 시 예매를 완료 상태로 확정한다")
     void processPayment_success() {
@@ -69,7 +73,7 @@ class ReservationPaymentFacadeTest {
 
         assertThrows(GeneralException.class, () -> reservationPaymentFacade.processPayment(1L, 1L));
 
-        verify(reservationService).rollbackReservation(reservation);
+        verify(paymentCompensationService).cancelReservation(1L);
         verify(reservationService, never()).confirmReservation(reservation);
     }
 

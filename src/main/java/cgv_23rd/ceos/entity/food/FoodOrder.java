@@ -73,4 +73,7 @@ public class FoodOrder extends BaseEntity {
         this.totalPrice += itemTotalPrice;
     }
 
+    public boolean isOwnedBy(Long userId) {
+        return this.user.getId().equals(userId);
+    }
 }
