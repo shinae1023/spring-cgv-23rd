@@ -21,3 +21,9 @@ jwt:
   expiration:
     access-token: 3600000
     refresh-token: 604800000
+
+payment:
+  server:
+    url: http://localhost:8081
+  store-id: test-store
+  api-secret: test-secret
