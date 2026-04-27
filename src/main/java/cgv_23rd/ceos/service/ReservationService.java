@@ -59,29 +59,52 @@ public class ReservationService {
     }
 
     @Transactional(noRollbackFor = GeneralException.class)
-    public void confirmReservation(Reservation reservation) {
+    public void confirmReservation(Long userId, Long reservationId) {
+        Reservation reservation = reservationRepository.findByIdWithLock(reservationId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.RESERVATION_NOT_FOUND));
+        validateOwner(userId, reservation);
         reservation.markPaymentPaid();
         reservation.confirm();
     }
 
     @Transactional(noRollbackFor = GeneralException.class)
-    public void assignPaymentId(Reservation reservation, String paymentId) {
+    public void assignPaymentId(Long userId, Long reservationId, String paymentId) {
+        Reservation reservation = reservationRepository.findByIdWithLock(reservationId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.RESERVATION_NOT_FOUND));
+        validateOwner(userId, reservation);
         reservation.assignPaymentId(paymentId);
     }
 
     @Transactional(noRollbackFor = GeneralException.class)
-    public void markPaymentFailed(Reservation reservation) {
+    public void markPaymentFailed(Long userId, Long reservationId) {
+        Reservation reservation = reservationRepository.findByIdWithLock(reservationId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.RESERVATION_NOT_FOUND));
+        validateOwner(userId, reservation);
         reservation.markPaymentFailed();
     }
 
     @Transactional(noRollbackFor = GeneralException.class)
-    public void markPaymentUnknown(Reservation reservation) {
+    public void markPaymentUnknown(Long userId, Long reservationId) {
+        Reservation reservation = reservationRepository.findByIdWithLock(reservationId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.RESERVATION_NOT_FOUND));
+        validateOwner(userId, reservation);
         reservation.markPaymentUnknown();
     }
 
     @Transactional(noRollbackFor = GeneralException.class)
-    public void markPaymentCancelled(Reservation reservation) {
+    public void markPaymentCancelled(Long userId, Long reservationId) {
+        Reservation reservation = reservationRepository.findByIdWithLock(reservationId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.RESERVATION_NOT_FOUND));
+        validateOwner(userId, reservation);
         reservation.markPaymentCancelled();
+    }
+
+    @Transactional(readOnly = true)
+    public Reservation getOwnedReservation(Long userId, Long reservationId) {
+        Reservation reservation = reservationRepository.findByIdWithDetails(reservationId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.RESERVATION_NOT_FOUND));
+        validateOwner(userId, reservation);
+        return reservation;
     }
 
     @Transactional(noRollbackFor = GeneralException.class)
@@ -99,9 +122,6 @@ public class ReservationService {
 
     // 2. 영화 예매 취소
     public void cancelReservation(Long userId, Long reservationId) {
-        userRepository.findById(userId)
-                .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
-
         Reservation reservation = getOwnedReservationWithLock(userId, reservationId);
         reservation.cancel(LocalDateTime.now());
     }

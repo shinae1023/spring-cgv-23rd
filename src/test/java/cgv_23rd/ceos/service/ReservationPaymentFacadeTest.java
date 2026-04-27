@@ -48,41 +48,42 @@ class ReservationPaymentFacadeTest {
     @DisplayName("결제 성공 시 예매를 완료 상태로 확정한다")
     void processPayment_success() {
         Reservation reservation = createPendingReservation(1L, 1L);
-        given(reservationService.getOwnedReservationWithLock(1L, 1L)).willReturn(reservation);
+        given(reservationService.getOwnedReservation(1L, 1L)).willReturn(reservation);
         given(paymentService.requestInstantPayment(anyString(), anyString(), anyInt(), anyString()))
                 .willReturn(paidResponse("PAID"));
 
         PaymentResultDto result = reservationPaymentFacade.processPayment(1L, 1L);
 
         assertEquals(true, result.success());
-        verify(reservationService).assignPaymentId(any(Reservation.class), anyString());
-        verify(reservationService).confirmReservation(reservation);
+        verify(reservationService).assignPaymentId(eq(1L), eq(1L), anyString());
+        verify(reservationService).confirmReservation(1L, 1L);
     }
 
     @Test
     @DisplayName("결제 실패 시 예매는 유지되고 결제 실패 상태만 기록한다")
     void processPayment_fail_marksPaymentFailed() {
         Reservation reservation = createPendingReservation(1L, 1L);
-        given(reservationService.getOwnedReservationWithLock(1L, 1L)).willReturn(reservation);
+        given(reservationService.getOwnedReservation(1L, 1L)).willReturn(reservation);
         given(paymentService.requestInstantPayment(anyString(), anyString(), anyInt(), anyString()))
                 .willThrow(new GeneralException(GeneralErrorCode.PAYMENT_FAILED));
 
         assertThrows(GeneralException.class, () -> reservationPaymentFacade.processPayment(1L, 1L));
 
-        verify(reservationService).markPaymentFailed(reservation);
-        verify(reservationService, never()).confirmReservation(reservation);
+        verify(reservationService).markPaymentFailed(1L, 1L);
+        verify(reservationService, never()).confirmReservation(anyLong(), anyLong());
     }
 
     @Test
     @DisplayName("완료된 예매 취소 시 외부 결제를 먼저 취소한다")
     void cancelReservation_paidReservation_callsExternalCancelFirst() {
         Reservation reservation = createCompletedReservation(1L, 1L, "RES_1_12345678");
-        given(reservationService.getOwnedReservationWithLock(1L, 1L)).willReturn(reservation);
+        given(reservationService.getOwnedReservation(1L, 1L)).willReturn(reservation);
         given(paymentService.cancelPayment("RES_1_12345678")).willReturn(paidResponse("CANCELLED"));
 
         reservationPaymentFacade.cancelReservation(1L, 1L);
 
         verify(paymentService).cancelPayment("RES_1_12345678");
+        verify(reservationService).markPaymentCancelled(1L, 1L);
         verify(reservationService).cancelReservation(1L, 1L);
     }
 

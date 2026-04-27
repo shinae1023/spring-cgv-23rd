@@ -9,7 +9,6 @@ import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import cgv_23rd.ceos.service.ReservationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -20,9 +19,8 @@ public class ReservationPaymentFacade {
     private final ReservationService reservationService;
     private final PaymentService paymentService;
 
-    @Transactional(noRollbackFor = GeneralException.class)
     public PaymentResultDto processPayment(Long userId, Long reservationId) {
-        Reservation reservation = reservationService.getOwnedReservationWithLock(userId, reservationId);
+        Reservation reservation = reservationService.getOwnedReservation(userId, reservationId);
 
         if (reservation.getStatus() == ReservationStatus.완료) {
             throw new GeneralException(GeneralErrorCode.PAYMENT_ALREADY_PROCESSED);
@@ -31,7 +29,7 @@ public class ReservationPaymentFacade {
         String paymentId = "RES_" + reservationId + "_" + UUID.randomUUID().toString().substring(0, 8);
         String orderName = reservation.getMovieTitle() + " 예매";
         String customData = "{\"reservationId\":" + reservation.getId() + "}";
-        reservationService.assignPaymentId(reservation, paymentId);
+        reservationService.assignPaymentId(userId, reservationId, paymentId);
 
         try {
             PaymentResponse response = paymentService.requestInstantPayment(
@@ -44,26 +42,25 @@ public class ReservationPaymentFacade {
             validatePaymentSuccess(response);
 
             try {
-                reservationService.confirmReservation(reservation);
+                reservationService.confirmReservation(userId, reservationId);
                 return new PaymentResultDto(true, "결제가 완료되었습니다.");
             } catch (RuntimeException e) {
                 paymentService.cancelPayment(paymentId);
-                reservationService.markPaymentCancelled(reservation);
-                reservation.cancel(java.time.LocalDateTime.now());
+                reservationService.markPaymentCancelled(userId, reservationId);
+                reservationService.cancelReservation(userId, reservationId);
                 throw e;
             }
         } catch (GeneralException e) {
-            updatePaymentStatusOnFailure(reservation, e);
+            updatePaymentStatusOnFailure(userId, reservationId, e);
             throw e;
         } catch (Exception e) {
-            reservationService.markPaymentUnknown(reservation);
+            reservationService.markPaymentUnknown(userId, reservationId);
             throw new GeneralException(GeneralErrorCode.PAYMENT_FAILED, "결제 처리 중 알 수 없는 오류가 발생했습니다.");
         }
     }
 
-    @Transactional
     public void cancelReservation(Long userId, Long reservationId) {
-        Reservation reservation = reservationService.getOwnedReservationWithLock(userId, reservationId);
+        Reservation reservation = reservationService.getOwnedReservation(userId, reservationId);
         reservation.validateCancelable(java.time.LocalDateTime.now());
 
         if (reservation.getStatus() == ReservationStatus.완료) {
@@ -75,7 +72,7 @@ public class ReservationPaymentFacade {
             if (response == null || response.data() == null || !"CANCELLED".equals(response.data().paymentStatus())) {
                 throw new GeneralException(GeneralErrorCode.PAYMENT_NOT_CANCELLABLE);
             }
-            reservationService.markPaymentCancelled(reservation);
+            reservationService.markPaymentCancelled(userId, reservationId);
         }
 
         reservationService.cancelReservation(userId, reservationId);
@@ -87,15 +84,15 @@ public class ReservationPaymentFacade {
         }
     }
 
-    private void updatePaymentStatusOnFailure(Reservation reservation, GeneralException e) {
+    private void updatePaymentStatusOnFailure(Long userId, Long reservationId, GeneralException e) {
         if (e.getCode() == GeneralErrorCode.PAYMENT_FAILED) {
-            reservationService.markPaymentFailed(reservation);
+            reservationService.markPaymentFailed(userId, reservationId);
             return;
         }
 
         if (e.getCode() == GeneralErrorCode.PAYMENT_SERVER_FAILED
                 || e.getCode() == GeneralErrorCode.EXTERNAL_SERVICE_TIMEOUT) {
-            reservationService.markPaymentUnknown(reservation);
+            reservationService.markPaymentUnknown(userId, reservationId);
         }
     }
 }

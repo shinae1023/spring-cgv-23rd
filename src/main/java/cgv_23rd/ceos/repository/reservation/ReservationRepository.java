@@ -16,6 +16,18 @@ import java.util.Optional;
 
 public interface ReservationRepository extends JpaRepository<Reservation,Long> {
 
+    @Query("""
+        select r
+          from Reservation r
+          join fetch r.user u
+          join fetch r.movieScreen ms
+          join fetch ms.movie m
+          join fetch ms.screen s
+          join fetch s.theater t
+         where r.id = :reservationId
+    """)
+    Optional<Reservation> findByIdWithDetails(@Param("reservationId") Long reservationId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT r FROM Reservation r WHERE r.id = :reservationId")
     Optional<Reservation> findByIdWithLock(@Param("reservationId") Long reservationId);
