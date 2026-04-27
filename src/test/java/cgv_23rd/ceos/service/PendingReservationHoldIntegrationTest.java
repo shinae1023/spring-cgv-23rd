@@ -190,4 +190,37 @@ class PendingReservationHoldIntegrationTest {
         assertEquals(ReservationStatus.대기, newReservation.getStatus());
         assertEquals(1L, reservationSeatRepository.count());
     }
+
+    @Test
+    @DisplayName("결제 미확정 대기 예매는 5분이 지나도 자동 취소되지 않는다")
+    void unknownPaymentPendingReservation_isNotExpiredAutomatically() {
+        Long reservationId = reservationService.createReservation(
+                user1Id,
+                new ReservationRequestDto(movieScreenId, List.of(seatA1Id))
+        );
+
+        jdbcTemplate.update(
+                "update reservation set payment_status = ?, created_at = ? where id = ?",
+                "UNKNOWN",
+                Timestamp.valueOf(LocalDateTime.now().minusMinutes(6)),
+                reservationId
+        );
+
+        int expiredCount = pendingOrderExpirationService.expirePendingReservations();
+
+        Reservation reservation = reservationRepository.findById(reservationId).orElseThrow();
+
+        GeneralException blocked = assertThrows(
+                GeneralException.class,
+                () -> reservationService.createReservation(
+                        user2Id,
+                        new ReservationRequestDto(movieScreenId, List.of(seatA1Id))
+                )
+        );
+
+        assertEquals(0, expiredCount);
+        assertEquals(ReservationStatus.대기, reservation.getStatus());
+        assertEquals(GeneralErrorCode.RESERVATION_SEAT_DUPLICATION, blocked.getCode());
+        assertEquals(1L, reservationSeatRepository.count());
+    }
 }

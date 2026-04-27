@@ -1,6 +1,7 @@
 package cgv_23rd.ceos.service;
 
 import cgv_23rd.ceos.entity.enums.FoodOrderStatus;
+import cgv_23rd.ceos.entity.enums.PaymentStatus;
 import cgv_23rd.ceos.entity.enums.ReservationStatus;
 import cgv_23rd.ceos.repository.food.FoodOrderRepository;
 import cgv_23rd.ceos.repository.reservation.ReservationRepository;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -19,6 +21,10 @@ public class PendingOrderExpirationService {
 
     private static final long RESERVATION_PENDING_MINUTES = 5L;
     private static final long FOOD_ORDER_PENDING_MINUTES = 5L;
+    private static final List<PaymentStatus> EXPIRABLE_PAYMENT_STATUSES = List.of(
+            PaymentStatus.READY,
+            PaymentStatus.FAILED
+    );
 
     private final ReservationSeatRepository reservationSeatRepository;
     private final ReservationRepository reservationRepository;
@@ -36,12 +42,14 @@ public class PendingOrderExpirationService {
 
         int deletedSeats = reservationSeatRepository.deleteSeatsByExpiredPendingReservations(
                 ReservationStatus.대기,
+                EXPIRABLE_PAYMENT_STATUSES,
                 expiredAt
         );
 
         int expiredReservations = reservationRepository.expirePendingReservations(
                 ReservationStatus.대기,
                 ReservationStatus.취소,
+                EXPIRABLE_PAYMENT_STATUSES,
                 expiredAt
         );
 
@@ -58,6 +66,7 @@ public class PendingOrderExpirationService {
         int expiredFoodOrders = foodOrderRepository.expirePendingFoodOrders(
                 FoodOrderStatus.대기,
                 FoodOrderStatus.취소,
+                EXPIRABLE_PAYMENT_STATUSES,
                 expiredAt
         );
 

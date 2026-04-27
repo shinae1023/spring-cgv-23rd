@@ -1,6 +1,7 @@
 package cgv_23rd.ceos.repository.food;
 
 import cgv_23rd.ceos.entity.enums.FoodOrderStatus;
+import cgv_23rd.ceos.entity.enums.PaymentStatus;
 import cgv_23rd.ceos.entity.food.FoodOrder;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -40,11 +41,13 @@ public interface FoodOrderRepository extends JpaRepository<FoodOrder, Long> {
         update FoodOrder fo
            set fo.status = :canceledStatus
          where fo.status = :pendingStatus
+           and fo.paymentStatus in :expirablePaymentStatuses
            and fo.createdAt < :expiredAt
     """)
     int expirePendingFoodOrders(
             @Param("pendingStatus") FoodOrderStatus pendingStatus,
             @Param("canceledStatus") FoodOrderStatus canceledStatus,
+            @Param("expirablePaymentStatuses") List<PaymentStatus> expirablePaymentStatuses,
             @Param("expiredAt") LocalDateTime expiredAt
     );
 

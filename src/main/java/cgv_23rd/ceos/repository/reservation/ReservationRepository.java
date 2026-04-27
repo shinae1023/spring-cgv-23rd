@@ -1,6 +1,7 @@
 package cgv_23rd.ceos.repository.reservation;
 
 import cgv_23rd.ceos.entity.enums.ReservationStatus;
+import cgv_23rd.ceos.entity.enums.PaymentStatus;
 import cgv_23rd.ceos.entity.reservation.Reservation;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -35,11 +36,13 @@ public interface ReservationRepository extends JpaRepository<Reservation,Long> {
         update Reservation r
            set r.status = :canceledStatus
          where r.status = :pendingStatus
+           and r.paymentStatus in :expirablePaymentStatuses
            and r.createdAt < :expiredAt
     """)
     int expirePendingReservations(
             @Param("pendingStatus") ReservationStatus pendingStatus,
             @Param("canceledStatus") ReservationStatus canceledStatus,
+            @Param("expirablePaymentStatuses") List<PaymentStatus> expirablePaymentStatuses,
             @Param("expiredAt") LocalDateTime expiredAt
     );
 
