@@ -6,9 +6,12 @@ import cgv_23rd.ceos.entity.food.TheaterFood;
 import cgv_23rd.ceos.entity.theater.Theater;
 import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
-import cgv_23rd.ceos.repository.*;
+import cgv_23rd.ceos.repository.food.FoodRepository;
+import cgv_23rd.ceos.repository.food.TheaterFoodRepository;
+import cgv_23rd.ceos.repository.theater.TheaterRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +24,7 @@ public class AdminFoodService {
     private final TheaterFoodRepository theaterFoodRepository;
 
     //음식 등록
+    @Transactional
     public void createFood(FoodCreateRequestDto requestDto) {
 
         Food food = Food.builder()

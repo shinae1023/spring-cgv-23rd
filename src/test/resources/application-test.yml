@@ -17,4 +17,13 @@ spring:
 
 jwt:
   secret:
-    key: your_very_long_test_secret_key_for_testing_purposes_only_32_chars
+    key: MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=
+  expiration:
+    access-token: 3600000
+    refresh-token: 604800000
+
+payment:
+  server:
+    url: http://localhost:8081
+  store-id: test-store
+  api-secret: test-secret

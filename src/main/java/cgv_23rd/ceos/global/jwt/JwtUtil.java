@@ -5,7 +5,6 @@ import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SecurityException;
-import io.jsonwebtoken.Claims;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +14,7 @@ import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
 
-@Slf4j(topic = "JwtUtil") // 로그 추가
+@Slf4j(topic = "JwtUtil")
 @Component
 public class JwtUtil {
 

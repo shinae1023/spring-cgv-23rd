@@ -1,19 +1,18 @@
 package cgv_23rd.ceos.service;
 
+import cgv_23rd.ceos.dto.theater.response.TheaterDetailResponseDto;
+import cgv_23rd.ceos.dto.theater.response.TheaterResponseDto;
 import cgv_23rd.ceos.entity.enums.Region;
 import cgv_23rd.ceos.entity.like.TheaterLike;
 import cgv_23rd.ceos.entity.theater.Theater;
 import cgv_23rd.ceos.entity.user.User;
-import cgv_23rd.ceos.dto.theater.request.TheaterRequestDto;
-import cgv_23rd.ceos.dto.theater.response.TheaterDetailResponseDto;
-import cgv_23rd.ceos.dto.theater.response.TheaterResponseDto;
-import cgv_23rd.ceos.global.apiPayload.ApiResponse;
 import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import cgv_23rd.ceos.repository.TheaterLikeRepository;
-import cgv_23rd.ceos.repository.TheaterRepository;
+import cgv_23rd.ceos.repository.theater.TheaterRepository;
 import cgv_23rd.ceos.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,27 +60,40 @@ public class TheaterService {
 
     // 3. 영화관 찜
     @Transactional
-    public String toggleTheaterLike(Long userId, Long theaterId){
-        User user = userRepository.findById(userId)
-                .orElseThrow(()-> new GeneralException(GeneralErrorCode.USER_NOT_FOUND,"유저 조회 불가"));
+    public void likeTheater(Long userId, Long theaterId) {
+        User user = getUser(userId);
+        Theater theater = getTheater(theaterId);
 
-        Theater theater = theaterRepository.findById(theaterId)
-                .orElseThrow(()-> new GeneralException(GeneralErrorCode.THEATER_NOT_FOUND,"영화관 조회 불가"));
+        if (theaterLikeRepository.findByUserAndTheater(user, theater) != null) {
+            return;
+        }
+
+        try {
+            theaterLikeRepository.save(TheaterLike.of(user, theater));
+        } catch (DataIntegrityViolationException e) {
+            return;
+        }
+    }
+
+    @Transactional
+    public void unlikeTheater(Long userId, Long theaterId) {
+        User user = getUser(userId);
+        Theater theater = getTheater(theaterId);
 
         TheaterLike theaterLike = theaterLikeRepository.findByUserAndTheater(user, theater);
-
-        if(theaterLike==null){
-            theaterLike = TheaterLike.builder()
-                    .user(user)
-                    .theater(theater)
-                    .build();
-            theaterLikeRepository.save(theaterLike);
-            return "영화관 id = " + theaterId + " 찜 성공";
-        }
-        else{
+        if (theaterLike != null) {
             theaterLikeRepository.delete(theaterLike);
-            return "영화관 id = " + theaterId + " 찜 삭제 성공";
         }
+    }
+
+    private User getUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND, "유저 조회 불가"));
+    }
+
+    private Theater getTheater(Long theaterId) {
+        return theaterRepository.findById(theaterId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.THEATER_NOT_FOUND, "영화관 조회 불가"));
     }
 
 }

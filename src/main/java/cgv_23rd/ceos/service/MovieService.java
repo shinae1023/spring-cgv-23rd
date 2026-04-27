@@ -1,22 +1,25 @@
 package cgv_23rd.ceos.service;
 
-import cgv_23rd.ceos.entity.enums.MovieStatus;
-import cgv_23rd.ceos.entity.like.MovieLike;
-import cgv_23rd.ceos.entity.movie.*;
-import cgv_23rd.ceos.entity.user.User;
-import cgv_23rd.ceos.dto.movie.request.MovieRequestDto;
 import cgv_23rd.ceos.dto.movie.response.ActorResponseDto;
 import cgv_23rd.ceos.dto.movie.response.MovieDetailResponseDto;
 import cgv_23rd.ceos.dto.movie.response.MovieResponseDto;
-import cgv_23rd.ceos.global.apiPayload.ApiResponse;
+import cgv_23rd.ceos.entity.enums.MovieStatus;
+import cgv_23rd.ceos.entity.like.MovieLike;
+import cgv_23rd.ceos.entity.movie.Movie;
+import cgv_23rd.ceos.entity.movie.MovieActor;
+import cgv_23rd.ceos.entity.movie.MovieImage;
+import cgv_23rd.ceos.entity.user.User;
 import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
-import cgv_23rd.ceos.repository.*;
+import cgv_23rd.ceos.repository.movie.MovieActorRepository;
+import cgv_23rd.ceos.repository.MovieLikeRepository;
+import cgv_23rd.ceos.repository.movie.MovieRepository;
+import cgv_23rd.ceos.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -102,28 +105,40 @@ public class MovieService {
 
     // 5. 영화 찜
     @Transactional
-    public String toggleMovieLike(Long userId, Long movieId){
-        User user = userRepository.findById(userId)
-                .orElseThrow(()-> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
+    public void likeMovie(Long userId, Long movieId) {
+        User user = getUser(userId);
+        Movie movie = getMovie(movieId);
 
-
-        Movie movie = movieRepository.findById(movieId)
-                .orElseThrow(()-> new GeneralException(GeneralErrorCode.MOVIE_NOT_FOUND));
-
-        MovieLike movieLike = movieLikeRepository.findMovieLikeByUserAndMovie(user,movie);
-
-        if(movieLike==null){
-            movieLike = MovieLike.builder()
-                    .user(user)
-                    .movie(movie)
-                    .build();
-            movieLikeRepository.save(movieLike);
-            return "영화 id = " + movieId + " 찜 성공";
+        if (movieLikeRepository.findMovieLikeByUserAndMovie(user, movie) != null) {
+            return;
         }
-        else{
+
+        try {
+            movieLikeRepository.save(MovieLike.of(user, movie));
+        } catch (DataIntegrityViolationException e) {
+            return;
+        }
+    }
+
+    @Transactional
+    public void unlikeMovie(Long userId, Long movieId) {
+        User user = getUser(userId);
+        Movie movie = getMovie(movieId);
+
+        MovieLike movieLike = movieLikeRepository.findMovieLikeByUserAndMovie(user, movie);
+        if (movieLike != null) {
             movieLikeRepository.delete(movieLike);
-            return "영화 id = " + movieId + " 찜 삭제 성공";
         }
+    }
+
+    private User getUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
+    }
+
+    private Movie getMovie(Long movieId) {
+        return movieRepository.findById(movieId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.MOVIE_NOT_FOUND));
     }
 
 }

@@ -1,16 +1,13 @@
 package cgv_23rd.ceos.controller;
 
-import cgv_23rd.ceos.dto.movie.request.MovieRequestDto;
 import cgv_23rd.ceos.dto.movie.response.ActorResponseDto;
 import cgv_23rd.ceos.dto.movie.response.MovieDetailResponseDto;
 import cgv_23rd.ceos.dto.movie.response.MovieResponseDto;
 import cgv_23rd.ceos.global.apiPayload.ApiResponse;
 import cgv_23rd.ceos.global.security.UserDetailsImpl;
 import cgv_23rd.ceos.service.MovieService;
-import cgv_23rd.ceos.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -46,12 +43,21 @@ public class MovieController {
     }
 
     // 5. 영화 찜하기/취소
-    @PostMapping("/{movieId}/like")
-    @Operation(summary = "영화 찜 토글 API", description = "영화 찜하기 또는 찜 취소 처리를 수행함")
-    public ApiResponse<String> toggleMovieLike(
+    @PostMapping("/{movieId}/likes")
+    @Operation(summary = "영화 찜하기 API", description = "사용자가 특정 영화를 찜하도록 처리함")
+    public ApiResponse<Void> likeMovie(
             @PathVariable Long movieId,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        Long userId = userDetails.getUser().getId();
-        return ApiResponse.onSuccess("영화 찜/찜 취소 성공",movieService.toggleMovieLike(userId, movieId));
+        movieService.likeMovie(userDetails.getUser().getId(), movieId);
+        return ApiResponse.onSuccess("영화 찜 성공");
+    }
+
+    @DeleteMapping("/{movieId}/likes")
+    @Operation(summary = "영화 찜 취소 API", description = "사용자가 특정 영화에 대한 찜을 취소하도록 처리함")
+    public ApiResponse<Void> unlikeMovie(
+            @PathVariable Long movieId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        movieService.unlikeMovie(userDetails.getUser().getId(), movieId);
+        return ApiResponse.onSuccess("영화 찜 취소 성공");
     }
 }

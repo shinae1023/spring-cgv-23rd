@@ -1,6 +1,8 @@
 package cgv_23rd.ceos.entity.theater;
 
 import cgv_23rd.ceos.entity.movie.MovieScreen;
+import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
+import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,6 +28,7 @@ public class Screen {
     @JoinColumn(name = "screen_type_id", nullable = false)
     private ScreenType screenType;
 
+    @Column(nullable = false)
     private String name;
     private Integer totalSeat;
 
@@ -34,4 +37,10 @@ public class Screen {
 
     @OneToMany(mappedBy = "screen")
     private List<MovieScreen> movieScreens = new ArrayList<>();
+
+    public void validateBelongsTo(Long theaterId) {
+        if (!this.theater.getId().equals(theaterId)) {
+            throw new GeneralException(GeneralErrorCode.SCREEN_THEATER_MISMATCH);
+        }
+    }
 }

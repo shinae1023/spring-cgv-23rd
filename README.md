@@ -169,6 +169,9 @@ JOIN m.team t  -- Member 엔티티 내부의 team 필드(연관관계) 기준
 </details>
 
 
+
+
+
 <details>
 <summary><h1>CGV 클론코딩 ERD 연관관계 및 제약조건 정리</h1></summary>
   
@@ -970,5 +973,612 @@ Access token과 refresh token을 발급
 
 #### ③ SecurityConfig 등록
 * **필터 체인 적용**: 구현한 두 커스텀 객체를 `SecurityConfig`의 `exceptionHandling` 설정에 등록하여 보안 필터 과정에서 해당 핸들러들이 동작하도록 지정
+
+</details>
+
+<details><summary><h1>동시성 · 결제 시스템 연동</h1></summary>
+
+
+## 1. 코드 리팩토링: Rich Domain Model 관점에서의 개선
+
+### 1-1. Rich Domain Model이란
+
+Rich Domain Model은 **데이터와 그 데이터를 다루는 핵심 비즈니스 규칙을 같은 객체 안에 함께 두는 방식**이다.
+ : 엔티티가 단순히 필드만 들고 있는 자료 구조가 아니라, 자신의 상태를 어떻게 바꿀 수 있는지,어떤 전이가 허용되는지, 어떤 값이 유효한지를 스스로 책임지는 모델이다.
+
+즉, 서비스 계층은 "무엇을 시킬지"를 조율하고, 도메인 객체는 "어떻게 상태를 바꿀지"를 책임진다.
+
+### 1-2. 이 방식이 OOP를 준수하는 이유
+
+- **캡슐화**: 상태와 행위를 한 객체 안에 둠으로써 외부에서 잘못된 상태 변경을 직접 하지 못하게 막을 수 있다.
+- **책임 분리**: 서비스는 트랜잭션과 외부 시스템 연동을 담당하고, 엔티티는 자신의 규칙과 상태 전이를 담당한다.
+- **응집도 향상**: 해당 도메인과 관련된 규칙이 엔티티에 모여 있어 읽기 쉽고 변경 지점이 명확하다.
+- **절차지향 코드 감소**: 서비스가 `if-else`로 상태를 일일이 바꾸는 대신 엔티티 메서드를 호출하도록 바뀌어 코드 의도가 분명해진다.
+
+### 1-3. 기존 코드에서 Poor Domain Model이었던 부분
+
+초기 구조에서는 일부 엔티티가 사실상 데이터 보관 역할에 가까웠고, 핵심 비즈니스 규칙이 서비스에 분산되어 있었다.
+
+- 생성 책임이 서비스에 퍼져 있었음
+- 상태 전이 검증이 서비스에서 처리되거나 아예 비어 있는 경우가 있었음
+- 같은 종류의 검증 로직이 여러 서비스에 중복되었음
+- 서비스 메서드가 한 번에 너무 많은 일을 하며 절차적으로 길어지는 경향이 있었음
+
+대표적으로 `FoodOrder`는 이전에 `confirm()` 과 `cancel()`이 상태 가드 없이 값을 바꾸는 구조였기 때문에, 도메인 객체가 스스로 잘못된 전이를 막지 못했다.
+
+### 1-4. 어떻게 개선했는가
+
+#### ① 생성 책임을 도메인으로 이동
+
+엔티티 생성 시점의 규칙을 서비스가 직접 조립하지 않고 도메인 정적 팩토리 메서드로 이동했다.
+
+예시:
+
+```java
+public static Reservation create(User user, MovieScreen movieScreen, LocalDateTime now) {
+    if (movieScreen.getStartAt().isBefore(now)) {
+        throw new GeneralException(GeneralErrorCode.MOVIE_ALREADY_STARTED);
+    }
+
+    return Reservation.builder()
+            .user(user)
+            .movieScreen(movieScreen)
+            .status(ReservationStatus.대기)
+            .totalPrice(0)
+            .paymentId(null)
+            .reservationSeats(new ArrayList<>())
+            .build();
+}
+```
+
+이렇게 하면 "예매 생성 시 이미 시작한 영화는 생성할 수 없다"는 규칙이 `Reservation` 안에 응집된다.
+
+#### ② 상태 전이 규칙을 엔티티에 배치
+
+`Reservation`은 `assignPaymentId()`, `confirm()`, `cancel()` 안에서 자신의 상태를 검증하고 직접 전이한다.
+
+```java
+public void confirm() {
+    if (this.status != ReservationStatus.대기) {
+        throw new GeneralException(GeneralErrorCode.PAYMENT_ALREADY_PROCESSED);
+    }
+
+    if (this.paymentId == null || this.paymentId.isBlank()) {
+        throw new GeneralException(GeneralErrorCode.PAYMENT_NOT_READY);
+    }
+
+    this.status = ReservationStatus.완료;
+}
+```
+
+매점 주문도 같은 방향으로 리팩토링하여 `FoodOrder`가 스스로 유효한 상태 전이만 허용하도록 개선했다.
+
+#### ③ 서비스 메서드를 private helper method로 분리
+
+서비스 계층의 긴 메서드를 역할별 private 메서드로 나누어 가독성을 높였다.
+
+예를 들어 `ReservationService`는 다음처럼 분리되었다.
+
+- `getUser`
+- `getMovieScreen`
+- `validateSeatRequest`
+- `processSeatReservations`
+- `validateOwner`
+- `toReservationResponse`
+
+이 방식으로 바꾼 이유는 다음과 같다.
+
+- 하나의 메서드가 여러 레벨의 추상화를 섞지 않게 하기 위해
+- 예외 처리와 핵심 흐름을 구분하기 위해
+- 중복 코드를 제거하고 수정 지점을 명확히 하기 위해
+- 테스트/리뷰 시 메서드 이름만 보고도 의도를 파악할 수 있게 하기 위해
+
+즉, 기존 절차지향적 서비스 코드가 "한 메서드 안에서 순서대로 다 처리"하던 구조였다면, 리팩토링 후에는 "핵심 흐름 + 의미 있는 helper 메서드 조합" 구조로 읽히도록 개선했다.
+
+### 1-5. 리팩토링 후 역할 분리
+
+- **Controller**: 요청/응답, 인증 사용자 추출
+- **Facade / Service**: 트랜잭션 경계, 외부 시스템 연동, 유스케이스 조율
+- **Entity**: 상태 전이, 유효성 검증, 생성 규칙
+- **Repository**: 조회 전략과 락 전략
+
+이 구조로 인해 서비스는 "절차"보다 "시나리오 조율"에 집중하고, 도메인 객체는 자신의 규칙을 직접 가지게 되었다.
+
+---
+
+## 2. 동시성 해결 방법 조사 및 프로젝트 적용
+
+### 2-1. 동시성 제어 방식 비교
+
+#### ① `synchronized`
+
+- **장점**: 자바 코드 레벨에서 가장 단순하게 적용 가능
+- **단점**: 단일 JVM 안에서만 유효하며, 서버가 여러 대인 환경에서는 동시성 제어가 불가능
+- **적합한 경우**: 단일 서버, 단순 임계 구역 보호
+- **우리 서비스에서 부적합한 이유**: 영화 예매/결제/재고 차감은 다중 서버에서도 동일한 무결성을 보장해야 하므로 JVM 내부 락만으로는 부족함
+
+#### ② DB Lock
+
+##### Pessimistic Lock
+
+- **장점**: 충돌이 자주 나는 자원에 대해 강하게 무결성을 보장함
+- **단점**: 대기 시간이 길어질 수 있고, 데드락 위험이 있음
+- **적합한 경우**: 재고 차감, 좌석 선점처럼 충돌 시 비용이 큰 경우
+
+##### Optimistic Lock
+
+- **장점**: 읽기 위주의 환경에서 성능상 유리하고 DB 락을 오래 잡지 않음
+- **단점**: 충돌 발생 시 재시도 로직이 필요하며, 충돌 빈도가 높으면 오히려 불편
+- **적합한 경우**: 조회가 많고 동시에 수정될 가능성이 상대적으로 낮은 경우
+
+##### Named Lock
+
+- **장점**: 실제 레코드가 없더라도 문자열 키 기준으로 락을 걸 수 있음
+- **단점**: DB 의존도가 높고 구현/운영 복잡도가 증가
+- **적합한 경우**: 아직 생성되지 않은 자원에 대해 선점 제어가 필요한 경우
+
+#### ③ Redis 기반 분산 락
+
+##### Lettuce
+
+- **장점**: 구현이 비교적 단순하고 가벼움
+- **단점**: 재시도/타임아웃/락 해제 안전성 등을 직접 더 많이 관리해야 함
+- **적합한 경우**: 간단한 분산 락
+
+##### Redisson
+
+- **장점**: 재진입 락, 대기, lease time, watchdog 등 분산 락 기능이 풍부함
+- **단점**: Redis 인프라와 운영 부담이 추가됨
+- **적합한 경우**: 다중 서버에서 분산 락을 본격적으로 운영해야 하는 경우
+
+### 2-2. CGV 서비스에서 어떤 방식이 적합한가
+
+현재 프로젝트의 핵심 충돌 자원은 다음과 같다.
+
+- 같은 상영 회차의 같은 좌석
+- 같은 극장의 같은 음식 재고
+- 같은 상영관의 시간표 등록
+
+이 자원들은 모두 정합성이 매우 중요하지만, 자원의 성격은 서로 다르다.
+
+- **예매 좌석**: 실제로 보호해야 하는 대상은 `Seat` 행 자체가 아니라 `movieScreenId + seatId` 조합이다.
+- **음식 재고 / 상영관 시간표**: 이미 존재하는 재고 row, 상영관 row를 기준으로 보호하면 된다.
+
+따라서 현재 프로젝트에서는 자원 특성에 따라 락 전략을 구분했다.
+
+- **예매 좌석**: `Named Lock + 유니크 제약 + 도메인 검증`
+- **매점 재고 / 상영 시간표**: `Pessimistic Lock + 도메인 검증`
+
+이 방식을 선택한 이유는 다음과 같다.
+
+- 좌석 예매는 `같은 회차의 같은 좌석`만 정확히 직렬화하면 됨
+- 재고 차감과 시간표 등록은 이미 존재하는 부모 row를 잠그는 방식이 단순하고 명확함
+- 중복 예매나 음수 재고는 절대 허용되면 안 됨
+- 단순 조회보다 정합성이 더 중요함
+- Redis 분산 락을 붙이기 전에도 DB 수준에서 확실한 보호 장치가 필요함
+
+Q : 같은 상영관의 시간표 등록 충돌은 잘 안 일어날 것 같은데 왜 비관적락으로 설정했나요?
+A :
+그 이유는 이 기능의 핵심이 **기존 데이터 수정 충돌 감지**보다 **동일 상영관에 대한 중복 시간표 등록 방지**에 있기 때문이다.
+
+스케줄 등록 로직은 다음 순서로 동작한다.
+
+1. 특정 상영관(`Screen`)을 조회하면서 락을 획득한다.
+2. 해당 상영관에 이미 겹치는 시간대의 스케줄이 존재하는지 검사한다.
+3. 겹치지 않으면 새로운 스케줄(`MovieScreen`)을 저장한다.
+
+이 과정에서 여러 요청이 동시에 들어오면, 둘 다 아직 스케줄이 없다고 판단한 뒤 동시에 insert를 수행하는 **레이스 컨디션**이 발생할 수 있다.  
+특히 이 문제는 “같은 row를 동시에 수정”하는 상황이 아니라, **조건을 확인한 뒤 새로운 row를 추가하는 상황**이기 때문에 단순한 `@Version` 기반 낙관적 락만으로는 안전하게 막기 어렵다.
+
+### 왜 낙관적 락이 아닌가?
+
+낙관적 락은 보통 이미 존재하는 엔티티에 `@Version` 필드를 두고, **수정 시점에 버전 충돌을 감지**하는 방식이다.  
+하지만 영화 스케줄 등록은 주로 `MovieScreen`을 새로 생성하는 작업이므로, 충돌 시점이 “기존 row 수정”이 아니라 “동시 insert”에 가깝다.
+
+즉, 다음과 같은 문제가 있다.
+
+- 두 요청이 동시에 상영관의 기존 스케줄을 조회할 수 있다.
+- 둘 다 겹치는 스케줄이 없다고 판단할 수 있다.
+- 그 뒤 각각 새로운 스케줄을 저장하면 중복 등록이 발생할 수 있다.
+
+이 경우 단순히 `MovieScreen`에 `@Version`을 두는 것만으로는 충돌을 막기 어렵다.  
+충돌을 안전하게 막으려면 별도의 버전 증가 전략, 강제 갱신, 혹은 더 복잡한 DB 제약 설계가 추가로 필요하다.
+
+### 왜 비관적 락이 적절한가?
+
+비관적 락은 상영관(`Screen`) 조회 시점에 DB 레벨에서 락을 먼저 획득하므로,  
+**같은 상영관에 대한 스케줄 등록 작업을 동시에 하나만 진행하도록 보장**할 수 있다.
+
+이 방식의 장점은 다음과 같다.
+
+- 시간표 겹침 검사와 저장을 하나의 보호 구간으로 묶을 수 있다.
+- 동시 요청 상황에서도 중복 등록을 안정적으로 방지할 수 있다.
+- 구현이 비교적 단순하고, 동작 의도가 명확하다.
+
+즉, 이 기능에서는 성능 최적화보다 **상영 시간표 무결성 보장**이 더 중요하므로 비관적 락을 선택했다.
+
+### 2-3. 실제 코드 적용 방식
+
+#### 예매 좌석
+
+- `movieScreenId + seatId` 조합을 문자열 키로 만들어 `Named Lock`을 획득
+- `ReservationSeat` 에 `UNIQUE (movie_screen_id, seat_id)` 제약을 둠
+- `ReservationStatus.대기`, `완료` 상태를 모두 점유 상태로 간주하여 중복 선택을 막음
+
+예매 좌석은 물리 좌석(`Seat`) 자체를 잠그는 것이 아니라, **특정 상영 회차에서의 특정 좌석**을 잠그는 것이 핵심이다.
+
+만약 `Seat` row 자체에 비관적 락을 걸면, 같은 물리 좌석이라도 서로 다른 `movieScreenId` 예매까지 함께 대기하게 된다.  
+예를 들어 `A1` 좌석이 10시 회차와 14시 회차에 모두 존재할 때, 우리가 막아야 하는 충돌은 `10시 A1 vs 10시 A1`이지 `10시 A1 vs 14시 A1`이 아니다.
+
+그래서 예매에서는 다음과 같이 `reservation:{movieScreenId}:{seatId}` 형식의 키로 네임드 락을 사용한다.
+
+```java
+List<String> lockKeys = seatIds.stream()
+        .sorted()
+        .map(seatId -> "reservation:" + movieScreenId + ":" + seatId)
+        .toList();
+
+reservationNamedLockManager.acquireLocks(lockKeys);
+```
+
+이 방식을 선택한 이유는 다음과 같다.
+
+- 예매 충돌의 기준이 `seat_id` 단독이 아니라 `movieScreenId + seatId` 조합이기 때문
+- 아직 `ReservationSeat` row가 생성되기 전에도 문자열 키만으로 선점 제어가 가능하기 때문
+- 서로 다른 회차의 같은 물리 좌석은 동시에 처리할 수 있어 락 범위를 더 정확히 줄일 수 있기 때문
+- `ReservationSeat`의 유니크 제약이 마지막 안전망 역할을 계속 수행하기 때문
+
+```java
+boolean isAlreadyReserved = reservationSeatRepository
+        .existsByMovieScreenIdAndSeatIdAndReservation_StatusIn(
+                movieScreenId, seatId, List.of(ReservationStatus.완료, ReservationStatus.대기)
+        );
+```
+
+#### 대기 상태 좌석 유지
+
+예매 생성 시 상태는 `대기`로 생성되고, 이 상태도 점유로 처리된다.
+
+```java
+return Reservation.builder()
+        .user(user)
+        .movieScreen(movieScreen)
+        .status(ReservationStatus.대기)
+        .totalPrice(0)
+        .build();
+```
+
+이후 5분이 지난 대기 예매는 스케줄러와 bulk update로 만료 처리한다.
+
+```java
+@Scheduled(fixedDelay = 60000)
+public void expirePendingOrders() {
+    pendingOrderExpirationService.expirePendingReservationsAndFoodOrders();
+}
+```
+
+즉, 대기 상태에서는 다른 사용자가 같은 좌석을 선택할 수 없고 만료 후에는 좌석 점유가 해제되어 다시 선택 가능하다
+
+이 부분은 `PendingReservationHoldIntegrationTest`로 검증했다.
+
+#### 매점 재고
+
+매점 주문은 **주문 생성 시 재고를 홀드하지 않고**, **결제 성공 후에만 차감**하는 정책을 적용했다.
+
+```java
+TheaterFood theaterFood = theaterFoodRepository
+        .findByTheaterAndFoodWithLock(foodOrder.getTheater(), item.getFood())
+        .orElseThrow(() -> new GeneralException(GeneralErrorCode.THEATER_FOOD_NOT_FOUND));
+
+theaterFood.decreaseStock(item.getQuantity());
+```
+
+이 정책을 택한 이유는 다음과 같다.
+
+- 과제 요구사항이 "결제가 진행된 후 재고가 차감되는지"에 초점이 있었음
+- 주문 생성 시점에 락을 오래 잡으면 오히려 락 경쟁이 커질 수 있음
+- 최종 완료 수량만 정확하면 오버셀링은 방지 가능함
+
+즉, 주문은 여러 개 생성될 수 있어도 실제 결제 성공 후 차감 단계에서 락을 잡고 순차 차감하므로 최종적으로 재고보다 많이 판매되는 오버셀링은 막을 수 있다
+
+이 부분은 `FoodPaymentFlowIntegrationTest`로 검증했다.
+
+### 2-4. 이번 프로젝트에서 정리한 결론
+
+- **단일 서버 키워드인 `synchronized`는 부적합**
+- **현재 자원 특성에는 Pessimistic Lock이 가장 적합**
+- **존재하지 않는 row에 대한 락이 필요하면 Named Lock 또는 분산 락 고려 가능**
+- **다중 서버 확장과 고도화가 필요해지면 Redis Redisson 도입을 검토할 수 있음**
+
+---
+
+## 3. 결제 시스템 연동 및 취소 로직
+
+### 3-1. 적용한 결제 시나리오
+
+이번 과제에서는 영화 예매와 매점 주문 모두 외부 결제 서버와 연동했다.
+
+- 영화 예매: 예매 생성 후 결제 성공 시 `대기 -> 완료`
+- 영화 예매 취소: 완료된 예매는 외부 결제를 먼저 취소한 뒤 내부 예매를 취소
+- 매점 주문: 결제 성공 시 재고 차감
+- 매점 주문 실패/재고 부족: 외부 결제 취소 또는 내부 보상 취소 처리
+
+### 3-2. Feign Client를 선택한 이유
+
+처음에는 `RestTemplate` 기반 설정이 있었지만, 외부 결제 서버 연동 방식은 `Feign Client`로 변경했다.
+
+적용 코드:
+
+```java
+@FeignClient(
+        name = "paymentClient",
+        url = "${payment.server.url}",
+        configuration = PaymentFeignConfig.class
+)
+public interface PaymentFeignClient {
+
+    @PostMapping(value = "/payments/{paymentId}/instant", consumes = "application/json")
+    PaymentResponse requestInstantPayment(
+            @PathVariable("paymentId") String paymentId,
+            @RequestBody InstantPaymentRequest request
+    );
+
+    @PostMapping("/payments/{paymentId}/cancel")
+    PaymentResponse cancelPayment(@PathVariable("paymentId") String paymentId);
+
+    @GetMapping("/payments/{paymentId}")
+    PaymentResponse getPayment(@PathVariable("paymentId") String paymentId);
+}
+```
+
+#### Feign을 선택한 이유
+
+- **선언형 인터페이스 기반**이라 코드가 짧고 읽기 쉽다
+- 결제 API 명세가 곧 자바 인터페이스 형태로 드러나서 유지보수성이 높다
+- 헤더 주입, 예외 변환, 설정 분리가 쉽다
+- 외부 API 클라이언트라는 의도가 코드에서 명확하게 드러난다
+
+#### `RestTemplate` / 일반 HTTP Client와 비교
+
+##### RestTemplate
+
+- **장점**: 단순 호출에는 익숙하고 직관적
+- **단점**: URL, 헤더, 요청/응답 매핑 코드가 서비스 안에 섞이기 쉬움
+- **결론**: 외부 결제 API처럼 엔드포인트가 여러 개일 때 선언형 인터페이스보다 장황해지기 쉽다
+
+##### Java HttpClient / WebClient
+
+- **장점**: 유연성이 높고 비동기 처리까지 가능
+- **단점**: 현재 프로젝트에서는 오히려 설정량이 많고 보일러플레이트가 늘어남
+
+##### Feign
+
+- **장점**: API 명세가 메서드로 바로 표현됨
+- **장점**: 관심사 분리가 좋고 테스트 작성도 수월함
+- **장점**: 결제 서버처럼 "정해진 외부 API를 호출하는 역할"에 적합함
+
+즉, 이번 프로젝트에서는 **복잡한 커스텀 HTTP 처리보다, 결제 API를 명확한 클라이언트 인터페이스로 표현하는 것이 더 큰 이점**이 있다고 판단하여 Feign을 선택했다.
+
+### 3-3. 인증 헤더 및 설정 분리
+
+결제 서버 호출에 필요한 secret은 Feign 설정으로 분리했다.
+
+```java
+@Bean
+public RequestInterceptor paymentRequestInterceptor(PaymentProperties paymentProperties) {
+    return requestTemplate -> requestTemplate.header(
+            HttpHeaders.AUTHORIZATION,
+            "Bearer " + paymentProperties.apiSecret()
+    );
+}
+```
+
+이를 통해 서비스 로직 안에 헤더 설정 코드가 섞이지 않도록 분리했다.
+
+### 3-4. 결제 실패 시 보상 트랜잭션
+
+결제/재고/예약 확정 흐름에서는 외부 결제와 내부 상태 변경이 함께 일어나므로, 실패 시 보상 처리 설계가 중요했다.
+
+처음에는 실패 시 같은 트랜잭션 안에서 `cancel()`을 호출하는 방식이었지만, 예외가 다시 던져지면 롤백되면서 보상 취소까지 함께 롤백되는 문제가 있었다.
+
+이를 해결하기 위해 `PaymentCompensationService`를 분리하고 `REQUIRES_NEW` 전파 속성으로 보상 로직을 별도 트랜잭션에서 수행하도록 변경했다.
+
+```java
+@Transactional(propagation = Propagation.REQUIRES_NEW)
+public void cancelFoodOrder(Long orderId) {
+    FoodOrder foodOrder = foodOrderRepository.findById(orderId)
+            .orElseThrow(() -> new GeneralException(GeneralErrorCode.FOOD_ORDER_NOT_FOUND));
+    foodOrder.cancel();
+}
+```
+
+이렇게 함으로써
+
+- 외부 결제 실패
+- 재고 차감 실패
+- 주문자 검증 실패
+
+등이 발생해도 내부 상태를 일관되게 취소 상태로 남길 수 있게 되었다.
+
+**트랜잭션 전파 속성 (Propagation.REQUIRES_NEW)**
+* **REQUIRES_NEW** : 기존에 실행 중인 트랜잭션의 존재 여부와 상관없이, 항상 새로운 독립적인 트랜잭션을 생성하여 실행하는 설정
+* **동작 방식** : 기존 메인 로직을 처리하던 부모 트랜잭션이 실행 중일 때 호출되면, 부모 트랜잭션을 잠시 대기(Suspend) 상태로 만듦.
+  이후 새로운 자식 트랜잭션을 시작하여 독립적으로 커밋(Commit) 또는 롤백(Rollback)을 수행함. 자식 트랜잭션 처리가 끝나면 대기 중이던 부모 트랜잭션이 다시 재개됨.
+* **핵심 특징** : 부모 트랜잭션과 자식 트랜잭션은 물리적으로 분리된 커넥션을 사용하므로, 부모 트랜잭션에 예외가 발생해 롤백되더라도 자식 트랜잭션의 커밋 결과에는 영향을 주지 않음.
+
+**보상 로직(PaymentCompensationService)에 REQUIRES_NEW를 도입한 이유**
+* **기본 설정(REQUIRED)의 한계** : 결제나 예외가 발생하면 기존 트랜잭션은 이미 '롤백 전용(Rollback-only)' 상태로 마킹됨. 이 상태에서 동일한 트랜잭션 내에 있는 `foodOrder.cancel()`을 호출해 주문 상태를 '취소'로 바꾸려 해도, 최종적으로 전체 트랜잭션이 롤백되므로 DB에는 취소 상태가 반영되지 않고 예전 상태로 돌아가 버림.
+* **REQUIRES_NEW 적용의 효과** : 메인 비즈니스 로직(부모 트랜잭션)이 예외로 인해 파기되더라도, 주문 취소 로직은 완전히 독립된 새로운 트랜잭션에서 실행됨. 따라서 부모 트랜잭션의 롤백 여부와 무관하게 "주문 상태를 CANCELED로 변경하는 작업"만큼은 데이터베이스에 안전하고 확실하게 커밋됨.
+
+**각 실패 상황별 동작 흐름**
+* **외부 결제 실패** : PG사 API 호출 타임아웃, 한도 초과 등으로 인해 에러가 반환된 상황. 예외가 발생해 메인 주문 트랜잭션은 롤백 수순을 밟지만, 분리된 보상 트랜잭션(`cancelFoodOrder`)이 즉각 실행되어 시스템상 생성되었던 주문 내역을 '결제 실패(취소)' 상태로 확정 지어 줌.
+* **재고 차감 실패** : 여러 사용자가 동시에 주문하여 남은 재고가 부족해진 상황. DB 업데이트 중 예외가 발생하여 전체 메인 주문 프로세스를 중단시키고, 독립된 보상 트랜잭션에서 해당 주문을 취소 처리하여 이후 재고 시스템과 주문 데이터 간의 정합성을 맞춤.
+* **주문자 검증 실패** : 토큰 불일치, 주문 권한 없음 등으로 판단된 상황. 즉시 프로세스를 멈추고 롤백 상태에 빠지지만, 새로 생성된 보상 트랜잭션을 통해 비정상적인 접근으로 발생한 해당 주문 기록을 '취소' 상태로 DB에 명확히 남겨 추후 로깅에 활용함.
+
+### 3-5. 주문자 검증 추가
+
+매점 결제는 초기에 `orderId`만으로 결제가 가능했기 때문에 주문 소유자 검증이 부족했다.
+이를 개선하여 Controller에서 `userId`를 받고 Service에서 `getOwnedFoodOrderWithLock`으로 주문자 검증을 수행하고 본인 주문일 때만 결제가 진행되도록 변경했다.
+이는 예매 결제와 동일한 수준의 권한 검증을 맞추기 위한 리팩토링이다.
+
+### 3-6. 외부 결제 호출과 DB 트랜잭션 분리
+
+초기 `FoodPaymentFacade`는 `@Transactional` 범위 안에서 외부 결제 API를 먼저 호출하고, 그 뒤 재고 차감과 주문 확정을 처리하고 있었다.
+
+이 방식은 정합성보다 먼저 **커넥션 풀 고갈 위험**을 만들 수 있었다.
+
+- 트랜잭션 시작과 동시에 DB 커넥션을 점유함
+- 외부 결제 서버 응답이 느리면 그동안 커넥션이 반환되지 않음
+- 동시 요청이 몰리면 결제와 무관한 조회/쓰기까지 같이 막힐 수 있음
+
+이를 줄이기 위해 매점 결제 흐름은 다음처럼 조정했다.
+
+- 주문 조회는 짧은 읽기 트랜잭션으로 수행
+- 외부 결제 API 호출은 트랜잭션 밖에서 수행
+- 결제 성공 후에만 별도의 짧은 로컬 트랜잭션에서 재고 차감과 주문 확정 수행
+
+즉, 외부 네트워크 대기 시간 동안 DB 커넥션을 오래 붙잡지 않도록 트랜잭션 경계를 분리했다.
+
+### 3-7. 주문 상태와 결제 상태 분리
+
+기존에는 `대기 / 완료 / 취소` 하나의 상태값으로 주문/예매의 생명주기와 결제 결과를 모두 표현하고 있었다.
+
+이 구조에서는 다음 문제가 있었다.
+
+- 실제 결제 실패와 사용자 취소가 모두 `취소`로 보임
+- 외부 결제 서버 장애나 타임아웃처럼 결제 결과가 불명확한 상황도 `취소`로 처리되기 쉬움
+- 사용자 입장에서 "정말 취소된 것인지", "결제가 실패한 것인지", "서버 확인이 필요한 것인지" 구분이 어려움
+
+이를 해결하기 위해 `PaymentStatus`를 별도로 도입했다.
+
+```java
+public enum PaymentStatus {
+    READY,
+    PROCESSING,
+    PAID,
+    FAILED,
+    CANCELLED,
+    UNKNOWN
+}
+```
+
+적용 원칙은 다음과 같다.
+
+- `status` : 주문/예매 자체의 상태
+- `paymentStatus` : 결제 처리 상태
+
+이렇게 분리한 뒤 상태 전이는 다음처럼 정리했다.
+
+- 주문/예매 생성 직후: `status=대기`, `paymentStatus=READY`
+- 결제 요청 직전: `paymentStatus=PROCESSING`
+- 결제 성공 후 내부 확정 완료: `status=완료`, `paymentStatus=PAID`
+- 카드 한도 초과 등 결제 실패 확정: `status=대기`, `paymentStatus=FAILED`
+- 외부 서버 장애/타임아웃 등 결과 미확정: `status=대기`, `paymentStatus=UNKNOWN`
+- 결제 취소가 실제로 완료된 경우: `status=취소`, `paymentStatus=CANCELLED`
+
+즉, 더 이상 "결제 실패 = 주문 취소"로 단순화하지 않고, **비즈니스 상태와 결제 상태를 분리해서 표현**하도록 바꿨다.
+
+### 3-8. 결제 실패 시 즉시 취소하지 않도록 변경
+
+기존 보상 로직은 결제 실패나 서버 오류가 발생하면 대기 주문/예매를 바로 `취소`로 돌리는 방식이었다.
+
+하지만 이 방식은 다음과 같은 한계가 있었다.
+
+- 실제로는 결제가 단순 실패한 것뿐인데 주문 자체가 사라진 것처럼 보임
+- 외부 결제 서버 장애처럼 결과를 아직 모르는 상황도 `취소`로 굳어질 수 있음
+
+그래서 이번에는 실패 원인에 따라 다르게 처리하도록 바꿨다.
+
+- 결제 실패 확정: `paymentStatus=FAILED`
+- 외부 서버 오류/타임아웃: `paymentStatus=UNKNOWN`
+- 재고 부족처럼 결제 후 보상 취소가 실제로 일어난 경우만 `status=취소`, `paymentStatus=CANCELLED`
+
+이 변경으로 인해 사용자는 자신의 주문/예매가 "정말 취소된 것인지"와 "결제만 실패한 것인지"를 구분해서 볼 수 있게 되었다.
+
+또한 조회 응답 DTO에도 `paymentStatus`를 포함시켜 클라이언트에서도 상태를 명확히 표현할 수 있도록 했다.
+
+### 3-9. 만료 스케줄러가 결제 상태까지 함께 보도록 수정
+
+`PendingOrderExpirationService`는 원래 `status=대기`이고 생성된 지 5분이 지난 주문/예매를 모두 자동 취소하고 있었다.
+
+문제는 결제 상태를 분리한 뒤에도 스케줄러가 여전히 `status`만 보고 자동 취소하면, 다음과 같은 문제가 생길 수 있다는 점이었다.
+
+- `paymentStatus=FAILED` : 자동 취소되어도 비교적 자연스러움
+- `paymentStatus=UNKNOWN` : 실제 결제 결과를 아직 모르는 상태인데도 자동 취소될 수 있음
+- 예매의 경우 `UNKNOWN` 상태인데 좌석까지 바로 풀려버릴 수 있음
+
+이를 막기 위해 만료 조건을 `status`뿐 아니라 `paymentStatus`까지 함께 보도록 바꿨다.
+
+현재 자동 만료 대상은 다음과 같다.
+
+- `status=대기`
+- `paymentStatus in (READY, FAILED)`
+- 생성 후 5분 초과
+
+반대로 다음 상태는 자동 만료 대상에서 제외했다.
+
+- `PROCESSING`
+- `UNKNOWN`
+
+예매 좌석 삭제 쿼리도 동일한 조건을 사용하도록 맞춰서, 결제 미확정 상태의 좌석이 의도치 않게 해제되지 않도록 했다.
+
+### 3-10. 이번 변경으로 정리된 현재 정책
+
+- 외부 결제 호출은 DB 트랜잭션 밖에서 수행한다
+- 주문/예매 상태와 결제 상태는 분리해서 관리한다
+- 결제 실패는 곧바로 주문 취소로 보지 않고 `paymentStatus`로 표현한다
+- 결제 결과가 불명확한 경우 `UNKNOWN`으로 남긴다
+- 5분 만료 스케줄러는 `READY`, `FAILED` 상태만 자동 취소한다
+- TODO : `UNKNOWN`, `PROCESSING`은 추후 별도 확인 흐름을 붙일 수 있도록 남겨둔다
+
+### 3-11. 매점 주문 취소 API 추가
+
+미션 요구사항에 맞춰 매점 주문도 취소 API를 추가했다.
+
+적용한 정책은 예매 취소와 유사하지만, 매점 주문은 **재고 복원 여부**가 함께 고려되어야 했다.
+
+- `대기` 주문: 외부 결제가 완료되지 않은 상태이므로 내부 주문만 바로 취소
+- `완료` 주문: 외부 결제를 먼저 취소한 뒤 내부 주문을 취소하고 재고를 복원
+
+즉, 매점 주문 취소는 단순히 상태값만 `취소`로 바꾸는 것이 아니라,
+**결제 취소와 재고 복원까지 포함된 보상 흐름**으로 처리하도록 만들었다.
+
+Controller에는 다음 API를 추가했다.
+
+```java
+@PostMapping("/{orderId}/cancel")
+public ApiResponse<Void> cancelFoodOrder(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable Long orderId) {
+
+    Long userId = userDetails.getUser().getId();
+    foodPaymentFacade.cancelOrder(userId, orderId);
+    return ApiResponse.onSuccess("매점 주문 취소 성공");
+}
+```
+
+### 3-12. 완료 주문 취소 시 재고 복원 처리
+
+완료된 매점 주문을 취소할 때는 외부 결제 취소 성공 이후,
+기존에 차감했던 재고를 다시 복원해야 데이터 정합성이 맞는다.
+
+이를 위해 `FoodOrderService.cancelOrderAfterPaymentCancellation()`에서
+
+- 주문의 음식 항목을 `foodId` 기준으로 정렬한 뒤
+- 각 재고 row를 락으로 다시 조회하고
+- 차감했던 수량만큼 `increaseStock()`으로 복원
+- 마지막으로 주문 상태를 `취소`, 결제 상태를 `CANCELLED`로 변경
+
+하도록 구현했다.
+
+이 흐름은 "완료 주문 취소 시 재고가 실제로 복원되는지"를 검증하는 통합 테스트로도 확인했다.
+
+검증한 시나리오는 다음과 같다.
+
+- 초기 재고 10개
+- 주문 결제 완료 후 재고 8개
+- 주문 취소 후 재고 10개로 복원
+- 주문 상태 `완료 -> 취소`
+- 결제 상태 `PAID -> CANCELLED`
 
 </details>

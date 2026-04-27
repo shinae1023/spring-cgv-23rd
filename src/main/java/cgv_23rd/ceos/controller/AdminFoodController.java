@@ -29,9 +29,8 @@ public class AdminFoodController {
 
     @PatchMapping("/{theaterFoodId}")
     @Operation(summary = "음식 재고 수정 API", description = "음식 재고를 수정합니다.")
-    public ApiResponse<Void> updateFoodStock(@AuthenticationPrincipal UserDetailsImpl userDetails,@PathVariable Long theaterFoodId,
+    public ApiResponse<Void> updateFoodStock(@PathVariable Long theaterFoodId,
                                              @RequestParam int stock){
-        Long userId = userDetails.getUser().getId();
         adminFoodService.updateFoodStock(theaterFoodId, stock);
         return ApiResponse.onSuccess("재고 수정 성공");
     }

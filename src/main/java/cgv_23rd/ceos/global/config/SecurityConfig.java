@@ -5,12 +5,10 @@ import cgv_23rd.ceos.global.apiPayload.exception.handler.CustomAuthenticationEnt
 import cgv_23rd.ceos.global.jwt.JwtAuthenticationFilter;
 import cgv_23rd.ceos.global.jwt.JwtUtil;
 import cgv_23rd.ceos.global.security.UserDetailsServiceImpl;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -66,11 +64,12 @@ public class SecurityConfig {
                 .requestMatchers("/").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN") // admin 경로 권한설정
-                .requestMatchers(HttpMethod.GET,"/api/reviews/").permitAll()
-                .requestMatchers(HttpMethod.GET,"/api/movies/").permitAll()
-                .requestMatchers(HttpMethod.GET,"/api/reviews/movie/").permitAll()
-                .requestMatchers(HttpMethod.GET,"/api/schedules/").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/theaters/").permitAll()
+                .requestMatchers(HttpMethod.GET,"/api/reviews/**").permitAll()
+                .requestMatchers(HttpMethod.GET,"/api/movies/**").permitAll()
+                .requestMatchers(HttpMethod.GET,"/api/movies").permitAll()
+                .requestMatchers(HttpMethod.GET,"/api/reviews/movie/**").permitAll()
+                .requestMatchers(HttpMethod.GET,"/api/schedules/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/theaters/**").permitAll()
                 .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
         );
 

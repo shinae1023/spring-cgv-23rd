@@ -3,20 +3,19 @@ package cgv_23rd.ceos.service.admin;
 import cgv_23rd.ceos.dto.movie.request.MovieRequestDto;
 import cgv_23rd.ceos.dto.schedule.request.ScheduleCreateRequestDto;
 import cgv_23rd.ceos.dto.theater.request.TheaterRequestDto;
-import cgv_23rd.ceos.entity.enums.MovieStatus;
 import cgv_23rd.ceos.entity.movie.Movie;
 import cgv_23rd.ceos.entity.movie.MovieScreen;
 import cgv_23rd.ceos.entity.theater.Screen;
 import cgv_23rd.ceos.entity.theater.Theater;
 import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
-import cgv_23rd.ceos.repository.*;
+import cgv_23rd.ceos.repository.movie.MovieRepository;
+import cgv_23rd.ceos.repository.movie.MovieScreenRepository;
+import cgv_23rd.ceos.repository.theater.ScreenRepository;
+import cgv_23rd.ceos.repository.theater.TheaterRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -45,38 +44,18 @@ public class AdminMovieService {
     // 1. 영화 생성
     @Transactional
     public Long createMovie(MovieRequestDto requestDto){
+        Movie movie = Movie.create(
+                requestDto.title(),
+                requestDto.description(),
+                requestDto.openDate(),
+                requestDto.closeDate()
+        );
 
-        if (requestDto.closeDate().isBefore(requestDto.openDate())) {
-            throw new GeneralException(GeneralErrorCode.INVALID_MOVIE_DATE);
-        }
-
-        LocalDate today = LocalDate.now();
-        MovieStatus calculatedStatus;
-
-        if (today.isBefore(requestDto.openDate())) {
-            calculatedStatus = MovieStatus.예정;
-        } else if (today.isAfter(requestDto.closeDate())) {
-            calculatedStatus = MovieStatus.종료;
-        } else {
-            calculatedStatus = MovieStatus.상영중;
-        }
-
-        Movie movie = Movie.builder()
-                .title(requestDto.title())
-                .description(requestDto.description())
-                .status(calculatedStatus)
-                .openDate(requestDto.openDate())
-                .closeDate(requestDto.closeDate())
-                .build();
-
-        movie.createDefaultStatistics();
-
-        movieRepository.save(movie);
-
-        return movie.getId();
+        return movieRepository.save(movie).getId();
     }
 
     // 1. 극장별 상영 시간표 등록
+    @Transactional
     public void createSchedule(Long theaterId, ScheduleCreateRequestDto requestDto) {
         Theater theater = theaterRepository.findById(theaterId)
                 .orElseThrow(()-> new GeneralException(GeneralErrorCode.THEATER_NOT_FOUND));
@@ -87,32 +66,22 @@ public class AdminMovieService {
         Screen screen = screenRepository.findByIdWithLock(requestDto.screenId())
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.SCREEN_NOT_FOUND));
 
-        // 해당 상영관이 극장 내에 있는지 확인
-        if (!screen.getTheater().getId().equals(theaterId)) {
-            throw new GeneralException(GeneralErrorCode.SCREEN_THEATER_MISMATCH);
-        }
+        screen.validateBelongsTo(theaterId);
 
-        // 종료 시간이 시작 시간보다 빨라서는 안 됨
-        if (!requestDto.endAt().isAfter(requestDto.startAt())) {
-            throw new GeneralException(GeneralErrorCode.INVALID_SCHEDULE_TIME);
-        }
-
-        // 상영 시간 겹침 검증
         boolean isOverlapping = movieScreenRepository.existsOverlappingSchedule(
                 requestDto.screenId(), requestDto.startAt(), requestDto.endAt()
         );
-
         if (isOverlapping) {
             throw new GeneralException(GeneralErrorCode.SCHEDULE_OVERLAPPED);
         }
 
-        MovieScreen movieScreen = MovieScreen.builder()
-                .movie(movie)
-                .screen(screen)
-                .sequence(requestDto.sequence())
-                .startAt(requestDto.startAt())
-                .endAt(requestDto.endAt())
-                .build();
+        MovieScreen movieScreen = MovieScreen.create(
+                screen,
+                movie,
+                requestDto.sequence(),
+                requestDto.startAt(),
+                requestDto.endAt()
+        );
 
         movieScreenRepository.save(movieScreen);
     }

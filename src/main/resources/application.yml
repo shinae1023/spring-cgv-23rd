@@ -23,3 +23,9 @@ jwt:
 logging:
   level:
     org.hibernate.SQL: debug
+
+payment:
+  server:
+    url: ${PAYMENT_SERVER_URL}
+  store-id: ${PAYMENT_STORE_ID}
+  api-secret: ${PAYMENT_API_SECRET}

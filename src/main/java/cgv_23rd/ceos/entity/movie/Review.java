@@ -6,9 +6,9 @@ import lombok.*;
 
 @Entity
 @Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 @Table(
         uniqueConstraints = {
                 @UniqueConstraint(name = "uk_user_movie_review", columnNames = {"user_id", "movie_id"})
@@ -29,4 +29,16 @@ public class Review {
 
     private Double rate;
     private String content;
+
+    @Version
+    private Long version;
+
+    public static Review create(User user, Movie movie, Double rate, String content) {
+        return Review.builder()
+                .user(user)
+                .movie(movie)
+                .rate(rate)
+                .content(content)
+                .build();
+    }
 }
