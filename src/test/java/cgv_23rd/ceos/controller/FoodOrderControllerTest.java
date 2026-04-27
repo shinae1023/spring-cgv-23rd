@@ -76,6 +76,17 @@ class FoodOrderControllerTest extends ControllerTestSupport {
     }
 
     @Test
+    @DisplayName("매점 주문 취소 성공")
+    void cancelFoodOrderSuccess() throws Exception {
+        mockMvc.perform(post("/api/foods/orders/{orderId}/cancel", 1L)
+                        .with(authenticatedUser()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("매점 주문 취소 성공"));
+
+        verify(foodPaymentFacade).cancelOrder(1L, 1L);
+    }
+
+    @Test
     @DisplayName("매점 주문 내역 조회 성공")
     void getFoodOrderListSuccess() throws Exception {
         given(foodOrderService.getFoodOrderList(1L)).willReturn(List.of(

@@ -46,6 +46,17 @@ public class FoodOrderController {
         return ApiResponse.onSuccess("음식 주문 결제 성공", result);
     }
 
+    @PostMapping("/{orderId}/cancel")
+    @Operation(summary = "매점 주문 취소 API", description = "대기 주문은 바로 취소하고, 완료 주문은 결제 취소 후 주문을 취소합니다.")
+    public ApiResponse<Void> cancelFoodOrder(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable Long orderId) {
+
+        Long userId = userDetails.getUser().getId();
+        foodPaymentFacade.cancelOrder(userId, orderId);
+        return ApiResponse.onSuccess("매점 주문 취소 성공");
+    }
+
     @GetMapping("/")
     @Operation(summary = "내 매점 주문 내역 조회 API", description = "특정 사용자의 전체 음식 주문 내역을 조회합니다.")
     public ApiResponse<List<FoodOrderResponseDto>> getFoodOrderList(

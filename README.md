@@ -1531,4 +1531,54 @@ public enum PaymentStatus {
 - 5분 만료 스케줄러는 `READY`, `FAILED` 상태만 자동 취소한다
 - TODO : `UNKNOWN`, `PROCESSING`은 추후 별도 확인 흐름을 붙일 수 있도록 남겨둔다
 
+### 3-11. 매점 주문 취소 API 추가
+
+미션 요구사항에 맞춰 매점 주문도 취소 API를 추가했다.
+
+적용한 정책은 예매 취소와 유사하지만, 매점 주문은 **재고 복원 여부**가 함께 고려되어야 했다.
+
+- `대기` 주문: 외부 결제가 완료되지 않은 상태이므로 내부 주문만 바로 취소
+- `완료` 주문: 외부 결제를 먼저 취소한 뒤 내부 주문을 취소하고 재고를 복원
+
+즉, 매점 주문 취소는 단순히 상태값만 `취소`로 바꾸는 것이 아니라,
+**결제 취소와 재고 복원까지 포함된 보상 흐름**으로 처리하도록 만들었다.
+
+Controller에는 다음 API를 추가했다.
+
+```java
+@PostMapping("/{orderId}/cancel")
+public ApiResponse<Void> cancelFoodOrder(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable Long orderId) {
+
+    Long userId = userDetails.getUser().getId();
+    foodPaymentFacade.cancelOrder(userId, orderId);
+    return ApiResponse.onSuccess("매점 주문 취소 성공");
+}
+```
+
+### 3-12. 완료 주문 취소 시 재고 복원 처리
+
+완료된 매점 주문을 취소할 때는 외부 결제 취소 성공 이후,
+기존에 차감했던 재고를 다시 복원해야 데이터 정합성이 맞는다.
+
+이를 위해 `FoodOrderService.cancelOrderAfterPaymentCancellation()`에서
+
+- 주문의 음식 항목을 `foodId` 기준으로 정렬한 뒤
+- 각 재고 row를 락으로 다시 조회하고
+- 차감했던 수량만큼 `increaseStock()`으로 복원
+- 마지막으로 주문 상태를 `취소`, 결제 상태를 `CANCELLED`로 변경
+
+하도록 구현했다.
+
+이 흐름은 "완료 주문 취소 시 재고가 실제로 복원되는지"를 검증하는 통합 테스트로도 확인했다.
+
+검증한 시나리오는 다음과 같다.
+
+- 초기 재고 10개
+- 주문 결제 완료 후 재고 8개
+- 주문 취소 후 재고 10개로 복원
+- 주문 상태 `완료 -> 취소`
+- 결제 상태 `PAID -> CANCELLED`
+
 </details>

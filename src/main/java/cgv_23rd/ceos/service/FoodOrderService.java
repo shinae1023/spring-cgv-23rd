@@ -158,7 +158,32 @@ public class FoodOrderService {
             throw new GeneralException(GeneralErrorCode.FORBIDDEN);
         }
 
+        List<FoodOrderItem> sortedItems = foodOrder.getFoodOrderItems().stream()
+                .sorted(Comparator.comparing(item -> item.getFood().getId()))
+                .toList();
+
+        for (FoodOrderItem item : sortedItems) {
+            TheaterFood theaterFood = theaterFoodRepository.findByTheaterAndFoodWithLock(foodOrder.getTheater(), item.getFood())
+                    .orElseThrow(() -> new GeneralException(GeneralErrorCode.THEATER_FOOD_NOT_FOUND));
+
+            theaterFood.increaseStock(item.getQuantity());
+        }
+
         foodOrder.markPaymentCancelled();
+        foodOrder.cancelAfterPaymentCancellation();
+    }
+
+    @Transactional(noRollbackFor = GeneralException.class)
+    public void cancelPendingOrder(Long userId, Long orderId) {
+        FoodOrder foodOrder = foodOrderRepository.findByIdWithLock(orderId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.FOOD_ORDER_NOT_FOUND));
+
+        validateUserExists(userId);
+
+        if (!foodOrder.isOwnedBy(userId)) {
+            throw new GeneralException(GeneralErrorCode.FORBIDDEN);
+        }
+
         foodOrder.cancel();
     }
 

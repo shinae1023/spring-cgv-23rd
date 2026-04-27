@@ -61,6 +61,34 @@ public class FoodPaymentFacade {
         }
     }
 
+    public void cancelOrder(Long userId, Long orderId) {
+        FoodOrder order = foodOrderService.getOwnedFoodOrder(userId, orderId);
+
+        if (order.getStatus() == FoodOrderStatus.완료) {
+            if (order.getPaymentId() == null || order.getPaymentId().isBlank()) {
+                throw new GeneralException(GeneralErrorCode.PAYMENT_NOT_READY, "결제 식별자가 없는 완료 주문입니다.");
+            }
+
+            PaymentResponse response;
+            try {
+                response = paymentService.cancelPayment(order.getPaymentId());
+            } catch (GeneralException e) {
+                foodOrderService.markPaymentUnknown(userId, orderId);
+                throw e;
+            }
+
+            if (response == null || response.data() == null || !"CANCELLED".equals(response.data().paymentStatus())) {
+                foodOrderService.markPaymentUnknown(userId, orderId);
+                throw new GeneralException(GeneralErrorCode.PAYMENT_NOT_CANCELLABLE);
+            }
+
+            foodOrderService.cancelOrderAfterPaymentCancellation(userId, orderId);
+            return;
+        }
+
+        foodOrderService.cancelPendingOrder(userId, orderId);
+    }
+
     private void updatePaymentStatusOnFailure(Long userId, Long orderId, GeneralException e) {
         if (e.getCode() == GeneralErrorCode.PAYMENT_FAILED) {
             foodOrderService.markPaymentFailed(userId, orderId);

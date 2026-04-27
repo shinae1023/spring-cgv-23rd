@@ -103,6 +103,18 @@ public class FoodOrder extends BaseEntity {
         this.status = FoodOrderStatus.취소;
     }
 
+    public void cancelAfterPaymentCancellation() {
+        if (this.status == FoodOrderStatus.취소) {
+            throw new GeneralException(GeneralErrorCode.FOOD_ORDER_ALREADY_CANCELED);
+        }
+
+        if (this.paymentStatus != PaymentStatus.CANCELLED) {
+            throw new GeneralException(GeneralErrorCode.PAYMENT_NOT_CANCELLABLE, "결제 취소가 완료된 주문만 취소할 수 있습니다.");
+        }
+
+        this.status = FoodOrderStatus.취소;
+    }
+
     public void markPaymentPaid() {
         validatePaymentIdExists();
         this.paymentStatus = PaymentStatus.PAID;

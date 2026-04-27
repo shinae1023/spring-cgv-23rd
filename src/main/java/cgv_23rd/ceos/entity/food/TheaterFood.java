@@ -38,6 +38,10 @@ public class TheaterFood {
         this.amount -= quantity;
     }
 
+    public void increaseStock(int quantity) {
+        this.amount += quantity;
+    }
+
     public void updateFoodStock(int stock){
         this.amount = stock;
     }

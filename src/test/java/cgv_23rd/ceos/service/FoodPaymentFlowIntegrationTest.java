@@ -154,6 +154,31 @@ class FoodPaymentFlowIntegrationTest {
         assertEquals(PaymentStatus.FAILED, order.getPaymentStatus());
     }
 
+    @Test
+    @DisplayName("완료된 매점 주문을 취소하면 결제 취소 후 재고가 복원된다")
+    void cancelPaidOrder_restoresStock() {
+        Long orderId = foodOrderService.createFoodOrder(
+                userId,
+                new FoodOrderRequestDto(theaterId, List.of(new FoodOrderItemRequestDto(foodId, 2)))
+        );
+
+        given(paymentService.requestInstantPayment(anyString(), anyString(), anyInt(), anyString()))
+                .willReturn(paidResponse("PAID"));
+        given(paymentService.cancelPayment(anyString()))
+                .willReturn(paidResponse("CANCELLED"));
+
+        foodPaymentFacade.processPayment(userId, orderId);
+        assertEquals(8, currentStock());
+
+        foodPaymentFacade.cancelOrder(userId, orderId);
+
+        FoodOrder order = foodOrderRepository.findById(orderId).orElseThrow();
+
+        assertEquals(10, currentStock());
+        assertEquals(FoodOrderStatus.취소, order.getStatus());
+        assertEquals(PaymentStatus.CANCELLED, order.getPaymentStatus());
+    }
+
     private int currentStock() {
         return theaterFoodRepository.findAll().stream()
                 .filter(theaterFood -> theaterFood.getTheater().getId().equals(theaterId))

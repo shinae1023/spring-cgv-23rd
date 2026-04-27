@@ -6,6 +6,7 @@ import cgv_23rd.ceos.global.security.UserDetailsImpl;
 import cgv_23rd.ceos.service.*;
 import cgv_23rd.ceos.service.admin.AdminFoodService;
 import cgv_23rd.ceos.service.admin.AdminMovieService;
+import cgv_23rd.ceos.service.pay.FoodPaymentFacade;
 import cgv_23rd.ceos.service.pay.ReservationPaymentFacade;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,9 @@ public abstract class ControllerTestSupport {
 
     @MockitoBean
     protected FoodOrderService foodOrderService;
+
+    @MockitoBean
+    protected FoodPaymentFacade foodPaymentFacade;
 
     @MockitoBean
     protected ScheduleService scheduleService;
