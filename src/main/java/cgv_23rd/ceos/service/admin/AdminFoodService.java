@@ -27,21 +27,14 @@ public class AdminFoodService {
     @Transactional
     public void createFood(FoodCreateRequestDto requestDto) {
 
-        Food food = Food.builder()
-                .name(requestDto.name())
-                .price(requestDto.price())
-                .build();
+        Food food = Food.create(requestDto.name(), requestDto.price());
 
         foodRepository.save(food);
 
         List<Theater> allTheaters = theaterRepository.findAll();
 
         List<TheaterFood> theaterFoods = allTheaters.stream()
-                .map(theater -> TheaterFood.builder()
-                        .theater(theater)
-                        .food(food)
-                        .amount(0)
-                        .build())
+                .map(theater -> TheaterFood.create(theater, food))
                 .collect(Collectors.toList());
 
         theaterFoodRepository.saveAll(theaterFoods);

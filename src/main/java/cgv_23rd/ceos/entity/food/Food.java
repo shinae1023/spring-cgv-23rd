@@ -8,7 +8,7 @@ import java.util.List;
 
 @Entity
 @Getter
-@Builder
+@Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Food {
@@ -26,4 +26,11 @@ public class Food {
 
     @OneToMany(mappedBy = "food")
     private List<FoodOrderItem> foodOrderItems = new ArrayList<>();
+
+    public static Food create(String name, Integer price) {
+        return Food.builder()
+                .name(name)
+                .price(price)
+                .build();
+    }
 }

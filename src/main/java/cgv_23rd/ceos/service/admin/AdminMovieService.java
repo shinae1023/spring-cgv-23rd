@@ -31,14 +31,13 @@ public class AdminMovieService {
     // 4. 극장 생성
     @Transactional
     public void createTheater(TheaterRequestDto requestDto){
-        Theater theater = Theater.builder()
-                .name(requestDto.name())
-                .address(requestDto.address())
-                .region(requestDto.region())
-                .isAvailable(true)
-                .description(requestDto.description())
-                .imageUrl(requestDto.imageUrl())
-                .build();
+        Theater theater = Theater.create(
+                requestDto.name(),
+                requestDto.address(),
+                requestDto.region(),
+                requestDto.description(),
+                requestDto.imageUrl()
+        );
 
         theaterRepository.save(theater);
     }

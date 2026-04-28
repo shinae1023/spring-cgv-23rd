@@ -8,7 +8,7 @@ import lombok.*;
 
 @Entity
 @Getter
-@Builder
+@Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(
@@ -30,6 +30,14 @@ public class TheaterFood {
     private Food food;
 
     private Integer amount;
+
+    public static TheaterFood create(Theater theater, Food food) {
+        return TheaterFood.builder()
+                .theater(theater)
+                .food(food)
+                .amount(0)
+                .build();
+    }
 
     public void decreaseStock(int quantity) {
         if (this.amount < quantity) {

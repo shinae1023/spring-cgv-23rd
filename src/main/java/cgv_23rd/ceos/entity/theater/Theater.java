@@ -12,7 +12,7 @@ import java.util.List;
 
 @Entity
 @Getter
-@Builder
+@Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Theater {
@@ -47,4 +47,21 @@ public class Theater {
 
     @OneToMany(mappedBy = "theater")
     private List<FoodOrder> foodOrders = new ArrayList<>();
+
+    public static Theater create(
+            String name,
+            String address,
+            Region region,
+            String description,
+            String imageUrl
+    ) {
+        return Theater.builder()
+                .name(name)
+                .address(address)
+                .region(region)
+                .isAvailable(true)
+                .description(description)
+                .imageUrl(imageUrl)
+                .build();
+    }
 }
