@@ -22,8 +22,17 @@ public class Food {
     private String foodImageUrl;
 
     @OneToMany(mappedBy = "food")
+    @Builder.Default
     private List<TheaterFood> theaterFoods = new ArrayList<>();
 
     @OneToMany(mappedBy = "food")
+    @Builder.Default
     private List<FoodOrderItem> foodOrderItems = new ArrayList<>();
+
+    public static Food create(String name, Integer price) {
+        return Food.builder()
+                .name(name)
+                .price(price)
+                .build();
+    }
 }

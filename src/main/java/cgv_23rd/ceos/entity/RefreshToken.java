@@ -23,8 +23,14 @@ public class RefreshToken {
     @Column(nullable = false)
     private String token;
 
-    public void updateToken(String token){
-        this.token = token;
+    @Version
+    private Long version;
+
+    public static RefreshToken create(User user, String token) {
+        return RefreshToken.builder()
+                .user(user)
+                .token(token)
+                .build();
     }
 
     // 토큰 갱신 로직을 엔티티가 스스로 수행

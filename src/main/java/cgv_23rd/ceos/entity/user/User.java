@@ -15,9 +15,9 @@ import java.util.List;
 
 @Entity
 @Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 @Table(name = "users")
 public class User extends BaseEntity {
 
@@ -56,4 +56,21 @@ public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "user")
     private List<FoodOrder> foodOrders = new ArrayList<>();
+
+    public static User signup(
+            String name,
+            String phone,
+            LocalDate birth,
+            String email,
+            String encodedPassword
+    ) {
+        return User.builder()
+                .name(name)
+                .phone(phone)
+                .birth(birth)
+                .email(email)
+                .password(encodedPassword)
+                .role(UserRole.USER)
+                .build();
+    }
 }

@@ -1,7 +1,6 @@
 package cgv_23rd.ceos.global.security;
 
 import cgv_23rd.ceos.entity.user.User;
-import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import cgv_23rd.ceos.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

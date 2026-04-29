@@ -1,31 +1,41 @@
 package cgv_23rd.ceos.service;
 
+import cgv_23rd.ceos.dto.reservation.request.ReservationRequestDto;
 import cgv_23rd.ceos.entity.movie.MovieScreen;
 import cgv_23rd.ceos.entity.reservation.Reservation;
 import cgv_23rd.ceos.entity.theater.Screen;
 import cgv_23rd.ceos.entity.theater.ScreenType;
 import cgv_23rd.ceos.entity.theater.Seat;
 import cgv_23rd.ceos.entity.user.User;
-import cgv_23rd.ceos.dto.reservation.request.ReservationRequestDto;
-import cgv_23rd.ceos.global.apiPayload.ApiResponse;
+import cgv_23rd.ceos.entity.user.UserRole;
 import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
 import cgv_23rd.ceos.repository.*;
+import cgv_23rd.ceos.repository.movie.MovieScreenRepository;
+import cgv_23rd.ceos.repository.reservation.ReservationRepository;
+import cgv_23rd.ceos.repository.reservation.ReservationSeatRepository;
+import cgv_23rd.ceos.repository.reservation.SeatRepository;
+import cgv_23rd.ceos.service.lock.ReservationNamedLockManager;
+import cgv_23rd.ceos.service.pay.PaymentService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class ReservationServiceTest {
@@ -38,6 +48,9 @@ class ReservationServiceTest {
     @Mock private ReservationSeatRepository reservationSeatRepository;
     @Mock private MovieScreenRepository movieScreenRepository;
     @Mock private SeatRepository seatRepository;
+    @Mock private ReservationNamedLockManager reservationNamedLockManager;
+    @Mock private PaymentService paymentService;
+    @Mock private UserService userService;
 
     @Test
     @DisplayName("영화 예매 성공 테스트")
@@ -48,7 +61,7 @@ class ReservationServiceTest {
         List<Long> seatIds = List.of(1L, 2L);
         ReservationRequestDto requestDto = new ReservationRequestDto(movieScreenId, seatIds);
 
-        User user = User.builder().id(userId).build();
+        User user = createUser(userId);
         Screen screen = Screen.builder().id(1L).screenType(ScreenType.builder().basePrice(15000).build()).build();
         MovieScreen movieScreen = MovieScreen.builder()
                 .id(movieScreenId)
@@ -58,12 +71,11 @@ class ReservationServiceTest {
         Seat seat1 = Seat.builder().id(1L).screen(screen).rowName("A").colNum(1).build();
         Seat seat2 = Seat.builder().id(2L).screen(screen).rowName("A").colNum(2).build();
 
-        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        given(userService.getUser(userId)).willReturn(user);
         given(movieScreenRepository.findById(movieScreenId)).willReturn(Optional.of(movieScreen));
-        given(seatRepository.findById(1L)).willReturn(Optional.of(seat1));
-        given(seatRepository.findById(2L)).willReturn(Optional.of(seat2));
-        given(reservationSeatRepository.existsByMovieScreenIdAndSeatIdAndReservation_Status(any(), any(), any()))
-                .willReturn(false);
+        given(seatRepository.findAllByIdInWithScreen(seatIds)).willReturn(List.of(seat1, seat2));
+        given(reservationSeatRepository.findReservedSeatIds(any(), any(), any()))
+                .willReturn(List.of());
 
         // when
         reservationService.createReservation(userId, requestDto);
@@ -79,10 +91,11 @@ class ReservationServiceTest {
         Long userId = 1L;
         ReservationRequestDto requestDto = new ReservationRequestDto(1L, List.of(1L));
 
-        User user = User.builder().id(userId).build();
+        User user = createUser(userId);
 
         ScreenType screenType = ScreenType.builder().basePrice(15000).build();
         Screen screen = Screen.builder().id(1L).screenType(screenType).build();
+        Seat seat = Seat.builder().id(1L).screen(screen).rowName("A").colNum(1).build();
 
         MovieScreen movieScreen = MovieScreen.builder()
                 .id(1L)
@@ -90,12 +103,11 @@ class ReservationServiceTest {
                 .startAt(LocalDateTime.now().plusHours(2))
                 .build();
 
-        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        given(userService.getUser(userId)).willReturn(user);
         given(movieScreenRepository.findById(1L)).willReturn(Optional.of(movieScreen));
-
-        // 이미 좌석이 예약된 상황으로 가정
-        given(reservationSeatRepository.existsByMovieScreenIdAndSeatIdAndReservation_Status(any(), any(), any()))
-                .willReturn(true);
+        given(seatRepository.findAllByIdInWithScreen(List.of(1L))).willReturn(List.of(seat));
+        given(reservationSeatRepository.findReservedSeatIds(any(), any(), any()))
+                .willReturn(List.of(1L));
 
         // when & then
         GeneralException exception = assertThrows(GeneralException.class, () ->
@@ -104,5 +116,18 @@ class ReservationServiceTest {
 
         // 발생한 예외가 우리가 정의한 에러 코드와 맞는지 확인
         assertEquals(GeneralErrorCode.RESERVATION_SEAT_DUPLICATION, exception.getCode());
+    }
+
+    private User createUser(Long userId) {
+        User user = User.signup(
+                "tester",
+                "01012345678",
+                LocalDate.of(2000, 1, 1),
+                "tester@example.com",
+                "encoded-password"
+        );
+        ReflectionTestUtils.setField(user, "id", userId);
+        ReflectionTestUtils.setField(user, "role", UserRole.USER);
+        return user;
     }
 }

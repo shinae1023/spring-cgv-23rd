@@ -1,7 +1,9 @@
 package cgv_23rd.ceos.dto.reservation.response;
 
+import cgv_23rd.ceos.entity.enums.PaymentStatus;
 import cgv_23rd.ceos.entity.enums.ReservationStatus;
 import lombok.Builder;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -15,5 +17,6 @@ public record ReservationResponseDto(
         List<String> seatInfo,
         Integer totalPrice,
         ReservationStatus status,
+        PaymentStatus paymentStatus,
         LocalDateTime reservationAt
 ) {}

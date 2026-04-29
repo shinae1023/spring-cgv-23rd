@@ -1,26 +1,25 @@
 package cgv_23rd.ceos.service;
 
-import cgv_23rd.ceos.entity.enums.FoodOrderStatus;
-import cgv_23rd.ceos.entity.food.*;
-import cgv_23rd.ceos.entity.theater.Theater;
-import cgv_23rd.ceos.entity.user.User;
-import cgv_23rd.ceos.dto.food.request.FoodCreateRequestDto;
 import cgv_23rd.ceos.dto.food.request.FoodOrderItemRequestDto;
 import cgv_23rd.ceos.dto.food.request.FoodOrderRequestDto;
-import cgv_23rd.ceos.dto.food.response.FoodOrderItemResponseDto;
-import cgv_23rd.ceos.dto.food.response.FoodOrderResponseDto;
-import cgv_23rd.ceos.global.apiPayload.ApiResponse;
+import cgv_23rd.ceos.entity.food.Food;
+import cgv_23rd.ceos.entity.food.FoodOrder;
+import cgv_23rd.ceos.entity.food.FoodOrderItem;
+import cgv_23rd.ceos.entity.food.TheaterFood;
+import cgv_23rd.ceos.entity.theater.Theater;
+import cgv_23rd.ceos.entity.user.User;
 import cgv_23rd.ceos.global.apiPayload.code.GeneralErrorCode;
 import cgv_23rd.ceos.global.apiPayload.exception.GeneralException;
-import cgv_23rd.ceos.repository.*;
+import cgv_23rd.ceos.repository.food.FoodOrderRepository;
+import cgv_23rd.ceos.repository.food.FoodRepository;
+import cgv_23rd.ceos.repository.food.TheaterFoodRepository;
+import cgv_23rd.ceos.repository.theater.TheaterRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,62 +27,173 @@ import java.util.stream.Collectors;
 public class FoodOrderService {
     private final FoodRepository foodRepository;
     private final FoodOrderRepository foodOrderRepository;
-    private final UserRepository userRepository;
     private final TheaterRepository theaterRepository;
     private final TheaterFoodRepository theaterFoodRepository;
+    private final UserService userService;
 
     // 1. 음식 주문
-    public void createFoodOrder(Long userId, FoodOrderRequestDto requestDto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
-
-        Theater theater = theaterRepository.findById(requestDto.theaterId())
-                .orElseThrow(() -> new GeneralException(GeneralErrorCode.THEATER_NOT_FOUND));
+    public Long createFoodOrder(Long userId, FoodOrderRequestDto requestDto) {
+        User user = userService.getUser(userId);
+        Theater theater = getTheater(requestDto.theaterId());
 
         FoodOrder foodOrder = FoodOrder.create(user, theater);
 
         for (FoodOrderItemRequestDto itemDto : requestDto.items()) {
-            Food food = foodRepository.findById(itemDto.foodId())
-                    .orElseThrow(() -> new GeneralException(GeneralErrorCode.FOOD_NOT_FOUND));
+            Food food = getFood(itemDto.foodId());
 
-            // 재고 엔티티를 락 걸고 조회하여 직접 차감
-            TheaterFood theaterFood = theaterFoodRepository.findByTheaterAndFoodWithLock(theater, food)
+            theaterFoodRepository.findByTheaterAndFood(theater, food)
                     .orElseThrow(() -> new GeneralException(GeneralErrorCode.THEATER_FOOD_NOT_FOUND));
 
-            theaterFood.decreaseStock(itemDto.quantity());
-
-            // 주문에 항목 추가
             foodOrder.addItem(food, itemDto.quantity());
         }
 
         foodOrderRepository.save(foodOrder);
-
+        return foodOrder.getId();
     }
 
-    // 2. 주문 내역 확인
     @Transactional(readOnly = true)
-    public List<FoodOrderResponseDto> getFoodOrderList(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new GeneralException(GeneralErrorCode.USER_NOT_FOUND));
-
-        List<FoodOrder> orders = foodOrderRepository.findAllByUserIdWithDetails(userId);
-
-        return orders.stream()
-                .map(order -> FoodOrderResponseDto.builder()
-                        .orderId(order.getId())
-                        .theaterName(order.getTheater().getName())
-                        .totalPrice(order.getTotalPrice())
-                        .status(order.getStatus())
-                        .createdAt(order.getCreatedAt())
-                        .items(order.getFoodOrderItems().stream()
-                                .map(item -> FoodOrderItemResponseDto.builder()
-                                        .foodName(item.getFood().getName())
-                                        .quantity(item.getQuantity())
-                                        .price(item.getPrice())
-                                        .build())
-                                .collect(Collectors.toList()))
-                        .build())
-                .collect(Collectors.toList());
+    public FoodOrder getFoodOrder(Long orderId) {
+        return foodOrderRepository.findById(orderId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.FOOD_ORDER_NOT_FOUND));
     }
 
+    @Transactional(readOnly = true)
+    public FoodOrder getOwnedFoodOrder(Long userId, Long orderId) {
+        FoodOrder order = foodOrderRepository.findByIdWithDetails(orderId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.FOOD_ORDER_NOT_FOUND));
+
+        validateUserExists(userId);
+
+        if (!order.isOwnedBy(userId)) {
+            throw new GeneralException(GeneralErrorCode.FORBIDDEN);
+        }
+
+        return order;
+    }
+
+    @Transactional
+    public void preparePayment(Long userId, Long orderId, String paymentId) {
+        FoodOrder foodOrder = foodOrderRepository.findByIdWithLock(orderId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.FOOD_ORDER_NOT_FOUND));
+
+        validateUserExists(userId);
+
+        if (!foodOrder.isOwnedBy(userId)) {
+            throw new GeneralException(GeneralErrorCode.FORBIDDEN);
+        }
+
+        foodOrder.assignPaymentId(paymentId);
+    }
+
+    @Transactional
+    public void confirmOrderAndDeductStock(Long userId, Long orderId) {
+        FoodOrder foodOrder = foodOrderRepository.findByIdWithLock(orderId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.FOOD_ORDER_NOT_FOUND));
+
+        validateUserExists(userId);
+
+        if (!foodOrder.isOwnedBy(userId)) {
+            throw new GeneralException(GeneralErrorCode.FORBIDDEN);
+        }
+
+        if (foodOrder.getStatus() != cgv_23rd.ceos.entity.enums.FoodOrderStatus.대기) {
+            throw new GeneralException(GeneralErrorCode.PAYMENT_ALREADY_PROCESSED);
+        }
+
+        List<FoodOrderItem> sortedItems = foodOrder.getFoodOrderItems().stream()
+                .sorted(Comparator.comparing(item -> item.getFood().getId()))
+                .toList();
+
+        for (FoodOrderItem item : sortedItems) {
+            // 비관적 락으로 재고 조회하여 동시성 제어
+            TheaterFood theaterFood = theaterFoodRepository.findByTheaterAndFoodWithLock(foodOrder.getTheater(), item.getFood())
+                    .orElseThrow(() -> new GeneralException(GeneralErrorCode.THEATER_FOOD_NOT_FOUND));
+
+            theaterFood.decreaseStock(item.getQuantity());
+        }
+        foodOrder.markPaymentPaid();
+        foodOrder.confirm();
+    }
+
+    @Transactional
+    public void markPaymentFailed(Long userId, Long orderId) {
+        FoodOrder foodOrder = foodOrderRepository.findByIdWithLock(orderId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.FOOD_ORDER_NOT_FOUND));
+
+        validateUserExists(userId);
+
+        if (!foodOrder.isOwnedBy(userId)) {
+            throw new GeneralException(GeneralErrorCode.FORBIDDEN);
+        }
+
+        foodOrder.markPaymentFailed();
+    }
+
+    @Transactional
+    public void markPaymentUnknown(Long userId, Long orderId) {
+        FoodOrder foodOrder = foodOrderRepository.findByIdWithLock(orderId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.FOOD_ORDER_NOT_FOUND));
+
+        validateUserExists(userId);
+
+        if (!foodOrder.isOwnedBy(userId)) {
+            throw new GeneralException(GeneralErrorCode.FORBIDDEN);
+        }
+
+        foodOrder.markPaymentUnknown();
+    }
+
+    @Transactional
+    public void cancelOrderAfterPaymentCancellation(Long userId, Long orderId) {
+        FoodOrder foodOrder = foodOrderRepository.findByIdWithLock(orderId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.FOOD_ORDER_NOT_FOUND));
+
+        validateUserExists(userId);
+
+        if (!foodOrder.isOwnedBy(userId)) {
+            throw new GeneralException(GeneralErrorCode.FORBIDDEN);
+        }
+
+        List<FoodOrderItem> sortedItems = foodOrder.getFoodOrderItems().stream()
+                .sorted(Comparator.comparing(item -> item.getFood().getId()))
+                .toList();
+
+        for (FoodOrderItem item : sortedItems) {
+            TheaterFood theaterFood = theaterFoodRepository.findByTheaterAndFoodWithLock(foodOrder.getTheater(), item.getFood())
+                    .orElseThrow(() -> new GeneralException(GeneralErrorCode.THEATER_FOOD_NOT_FOUND));
+
+            theaterFood.increaseStock(item.getQuantity());
+        }
+
+        foodOrder.markPaymentCancelled();
+        foodOrder.cancelAfterPaymentCancellation();
+    }
+
+    @Transactional
+    public void cancelPendingOrder(Long userId, Long orderId) {
+        FoodOrder foodOrder = foodOrderRepository.findByIdWithLock(orderId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.FOOD_ORDER_NOT_FOUND));
+
+        validateUserExists(userId);
+
+        if (!foodOrder.isOwnedBy(userId)) {
+            throw new GeneralException(GeneralErrorCode.FORBIDDEN);
+        }
+
+        foodOrder.cancel();
+    }
+
+    private Theater getTheater(Long theaterId) {
+        return theaterRepository.findById(theaterId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.THEATER_NOT_FOUND));
+    }
+
+    private Food getFood(Long foodId) {
+        return foodRepository.findById(foodId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.FOOD_NOT_FOUND));
+    }
+
+    private void validateUserExists(Long userId) {
+        userService.getUser(userId);
+    }
 }
