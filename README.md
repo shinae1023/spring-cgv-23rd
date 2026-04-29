@@ -1790,3 +1790,210 @@ CONTAINER ID   IMAGE                        COMMAND               CREATED       
 - 배포 성공
 <img width="1419" height="706" alt="image" src="https://github.com/user-attachments/assets/97a813bc-e5bd-4c9f-9380-3a3fd75a47c1" />
 
+---
+
+## Docker / EC2 배포 가이드
+
+### 1. 로컬에서 jar 빌드
+
+```bash
+./gradlew build
+```
+
+- 실행 jar: `build/libs/ceos-0.0.1-SNAPSHOT.jar`
+- `plain.jar`가 아니라 Spring Boot 실행 jar를 사용해야 한다.
+
+### 2. Docker 이미지 빌드
+
+프로젝트 루트의 `Dockerfile` 기준으로 빌드한다.
+
+```bash
+docker build -t ceos-app .
+```
+
+멀티 아키텍처 환경(Mac arm64에서 빌드 후 amd64 EC2에 배포)까지 고려하면 아래 방식이 안전하다.
+
+```bash
+docker buildx create --use --name multiarch-builder
+docker buildx inspect --bootstrap
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  -t shinae1023/ceos-app:latest \
+  --push \
+  .
+```
+
+### 3. Docker Compose로 로컬 실행
+
+`docker-compose.yml`은 앱 컨테이너만 띄우고, DB는 외부 MySQL/RDS를 사용하도록 구성되어 있다.
+
+```bash
+docker compose up -d --build
+docker compose logs -f app
+docker compose down
+```
+
+### 4. 환경변수 파일 준비
+
+로컬 Docker나 EC2 실행 시 `.env` 파일을 사용한다.
+
+예시:
+
+```env
+SPRING_PROFILES_ACTIVE=prod
+
+RDS_ENDPOINT=your-rds-endpoint.ap-northeast-2.rds.amazonaws.com
+DB_USERNAME=your-db-username
+DB_PASSWORD=your-db-password
+
+PAYMENT_SERVER_URL=https://ceos.diggindie.com
+PAYMENT_STORE_ID=shinae1023
+PAYMENT_API_SECRET=your-payment-api-secret
+
+JWT_SECRET_KEY=your-base64-jwt-secret
+```
+
+주의:
+
+- `SPRING_PROFILES_ACTIVE=prod`가 반드시 있어야 한다.
+- `application-prod.yml`은 `RDS_ENDPOINT`, `DB_USERNAME`, `DB_PASSWORD`를 사용한다.
+- `JWT_SECRET_KEY`는 Base64 문자열이어야 한다.
+
+### 5. Docker Hub에 이미지 올리기
+
+```bash
+docker login
+docker tag ceos-app shinae1023/ceos-app:latest
+docker push shinae1023/ceos-app:latest
+```
+
+Mac에서 만든 이미지를 EC2에서 받으려면 `linux/amd64` 또는 멀티아키 이미지로 push 해야 한다.
+
+### 6. EC2에서 이미지 pull 및 실행
+
+#### 6-1. Docker 권한 설정
+
+```bash
+sudo usermod -aG docker ubuntu
+newgrp docker
+```
+
+권한 반영 전에는 `sudo docker ...`로 실행할 수 있다.
+
+#### 6-2. 이미지 pull
+
+```bash
+docker pull shinae1023/ceos-app:latest
+```
+
+#### 6-3. 환경변수 파일 업로드 또는 생성
+
+로컬에서 복사:
+
+```bash
+scp -i <key.pem> .env ubuntu@<EC2_PUBLIC_IP>:~/.env.docker
+```
+
+또는 EC2에서 직접 생성:
+
+```bash
+nano ~/.env
+```
+
+#### 6-4. 컨테이너 실행
+
+```bash
+docker rm -f ceos-app
+docker run -d \
+  --name ceos-app \
+  -p 8080:8080 \
+  --env-file ~/.env \
+  shinae1023/ceos-app:latest
+```
+
+#### 6-5. 실행 확인
+
+```bash
+docker ps
+docker logs -f ceos-app
+```
+
+정상 기동 기준:
+
+- `docker ps`에서 `ceos-app`이 `Up` 상태
+- 로그에 `Tomcat started on port 8080`
+- 로그에 `Started Application`
+
+### 7. AWS RDS 연결 시 체크 포인트
+
+- `RDS_ENDPOINT`가 실제 endpoint인지 확인
+- `DB_USERNAME`, `DB_PASSWORD`가 정확한지 확인
+- RDS Security Group에서 현재 서버의 3306 접근이 허용되어야 함
+- 로컬 Docker 테스트 시에는 내 공인 IP 허용이 필요할 수 있음
+
+### 8. Nginx + 80/443 + 도메인 연결
+
+배포 구조:
+
+- Spring Boot 컨테이너: `8080`
+- Nginx: `80`, `443`
+- Nginx가 `127.0.0.1:8080`으로 reverse proxy
+
+#### 8-1. 보안그룹 설정
+
+- `80/tcp` 허용
+- `443/tcp` 허용
+- `8080/tcp`는 점검용으로만 잠시 열고, 운영 시 닫는 것을 권장
+
+#### 8-2. Nginx 설치
+
+```bash
+sudo apt update
+sudo apt install -y nginx
+sudo systemctl status nginx
+```
+
+#### 8-3. Nginx 설정
+
+```bash
+sudo nano /etc/nginx/sites-available/ceos-app
+```
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+활성화:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/ceos-app /etc/nginx/sites-enabled/ceos-app
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+#### 8-4. HTTPS 적용
+
+```bash
+sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d your-domain.com
+sudo certbot renew --dry-run
+```
+
+### 9. 최종 접속 확인
+
+- EC2 직접 확인: `http://<EC2_PUBLIC_IP>:8080`
+- Swagger: `http://<EC2_PUBLIC_IP>:8080/swagger-ui/index.html`
+- 도메인/Nginx 적용 후: `https://your-domain.com/swagger-ui/index.html`
+
