@@ -2089,4 +2089,7 @@ CD의 목적은 `main` 브랜치에 머지된 검증 완료 코드를 실제 서
 - `EC2_SSH_KEY`: EC2 접속용 private key 전체 내용
 
 민감한 애플리케이션 설정값은 GitHub Secrets가 아니라 EC2의 `~/.env`에 둔다.
+
+<img width="1045" height="214" alt="image" src="https://github.com/user-attachments/assets/3ad6181b-fad6-4087-9a35-2e766bf32a83" />
+
 </details>
