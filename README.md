@@ -1579,4 +1579,151 @@ public ApiResponse<Void> cancelFoodOrder(
 - 주문 상태 `완료 -> 취소`
 - 결제 상태 `PAID -> CANCELLED`
 
+### 3-13. 조회 구조 리팩토링
+
+#### 조회 정책 통합
+
+리팩토링을 진행하면서 여러 서비스에 흩어져 있던 `findById(...).orElseThrow(...)` 패턴도 정리했다.
+
+초기에는 `MovieService`, `ReviewService`, `TheaterService`, `ReservationService`, `FoodOrderService` 등이
+각자 `getUser`, `getMovie` 같은 helper 메서드를 따로 들고 있었다.
+이 방식은 빠르게 작성하기는 쉽지만,
+
+- 동일한 예외 정책이 여러 군데에 중복되고
+- 조회 책임이 분산되어 메서드 위치를 기억하기 어려우며
+- 조회 정책이 바뀔 때 수정 지점이 많아지는 문제가 있었다.
+
+그래서 공통 조회 책임을 다음처럼 모았다.
+
+- `UserService.getUser(userId)`
+- `MovieService.getMovie(movieId)`
+
+이후 다른 서비스들은 직접 Repository를 호출하지 않고,
+해당 서비스 메서드를 주입받아 재사용하도록 통일했다.
+
+이렇게 정리한 뒤에는 "유저 조회 정책은 `UserService`", "영화 조회 정책은 `MovieService`"처럼
+책임 위치가 더 명확해졌다.
+
+#### Mapper와 QueryService 분리
+
+조회 로직이 늘어나면서 서비스 계층 안에
+
+- Repository 조회
+- DTO 조립
+- 응답 포맷 매핑
+
+이 한 메서드 안에 섞여 읽는 흐름이 길어지는 문제가 있었다.
+
+이를 개선하기 위해 조회 전용 흐름을 다음처럼 분리했다.
+
+- `Controller -> QueryService -> Mapper`
+
+적용한 컴포넌트는 다음과 같다.
+
+- `MovieQueryService`, `TheaterQueryService`, `ReviewQueryService`
+- `ScheduleQueryService`, `FoodOrderQueryService`, `ReservationQueryService`
+- `MovieMapper`, `TheaterMapper`, `ReviewMapper`
+- `ScheduleMapper`, `FoodOrderMapper`, `ReservationMapper`
+
+이 구조로 바꾼 뒤에는
+
+- Command Service는 상태 변경에 집중하고
+- Query Service는 조회와 화면 응답 조립에 집중하며
+- Mapper는 DTO 변환만 담당하게 되었다.
+
+결과적으로 서비스 메서드 길이가 줄고,
+읽기/쓰기 책임이 이전보다 훨씬 명확해졌다.
+
+### 3-14. 객체지향 설계 리팩토링
+
+#### 도메인 객체 생성 책임을 엔티티로 이동
+
+초기 관리자 서비스에서는 `Theater.builder()`, `Food.builder()`, `TheaterFood.builder()`를 직접 호출해
+도메인 객체를 생성하고 있었다.
+
+이 구조에서는
+
+- 기본 상태값(`isAvailable=true`, `amount=0`)이 서비스에 노출되고
+- 생성 규칙이 서비스마다 흩어질 수 있으며
+- 엔티티가 자신의 생성 불변식을 스스로 설명하지 못하는 문제가 있었다.
+
+그래서 생성 책임을 엔티티 내부의 정적 팩토리 메서드로 이동했다.
+
+```java
+public static Theater create(...) { ... }
+public static Food create(...) { ... }
+public static TheaterFood create(Theater theater, Food food) { ... }
+```
+
+이후 서비스는 더 이상 builder의 세부 필드를 직접 알지 않고,
+"무엇을 만든다"는 의도만 표현하도록 단순화했다.
+
+즉, 도메인 객체의 **초기 상태와 생성 규칙은 도메인 안에서 관리**하도록 정리한 것이다.
+
+### 3-15. 입력 검증 및 예외 처리 보강
+
+#### 리뷰 별점 검증 보강
+
+리뷰 별점은 단순 `null` 여부만 확인하면
+음수나 범위 초과 값이 그대로 저장될 수 있고,
+이 값이 `MovieStatistics.averageRating` 계산에 반영되면 통계 데이터가 오염될 수 있다.
+
+그래서 리뷰 생성 시 별점이
+
+- `0.5 ~ 5.0` 범위 안에 있고
+- `0.5` 단위인지
+
+를 서비스 레벨에서 함께 검증하도록 보강했다.
+
+이 검증을 통해 비정상 입력이 도메인 통계값으로 흘러들어가는 것을 막을 수 있게 되었다.
+
+#### 중복 찜 처리 시 무결성 예외 숨김 방지
+
+영화 찜 / 영화관 찜은 중복 요청이 들어왔을 때
+동시성 상황에서는 `DataIntegrityViolationException`이 발생할 수 있다.
+
+초기 구현은 이 예외를 만나면 무조건 성공처럼 반환했는데,
+이 방식은 "진짜 중복"뿐 아니라
+
+- 다른 제약조건 위반
+- 잘못된 스키마 상태
+- 예상하지 못한 DB 무결성 오류
+
+까지 모두 조용히 숨겨버릴 위험이 있었다.
+
+이를 개선해,
+
+- 이미 해당 찜 레코드가 실제로 존재하는 경우에만 예외를 무시하고
+- 그 외 무결성 예외는 그대로 다시 던지도록
+
+처리 기준을 명확히 했다.
+
+즉, "동시성으로 인한 중복 찜"만 허용하고,
+실제 장애는 성공처럼 숨기지 않도록 변경했다.
+
+### 3-16. 성능 최적화
+
+#### 좌석 예매 N+1 문제 개선
+
+초기 `ReservationService.processSeatReservations()`는 좌석 수만큼 반복문을 돌면서
+
+- `seatRepository.findById(seatId)`
+- `reservationSeatRepository.existsByMovieScreenIdAndSeatIdAndReservation_StatusIn(...)`
+
+를 매번 호출하고 있었다.
+
+이 구조는 요청 좌석 수만큼 쿼리가 늘어나는 전형적인 N+1 패턴이었고,
+예매처럼 락과 트랜잭션이 함께 걸리는 흐름에서는 DB 커넥션 점유 시간을 더 길게 만들 수 있었다.
+
+이를 개선하기 위해
+
+- 좌석 엔티티는 `findAllByIdInWithScreen(seatIds)`로 한 번에 조회하고
+- 이미 점유된 좌석은 `findReservedSeatIds(...)`로 한 번에 조회한 뒤
+- 서비스 메모리에서 최종 검증
+
+하는 방식으로 바꿨다.
+
+이후 예매 생성 시 좌석 수가 늘어나더라도
+좌석 조회와 중복 검증 쿼리 수가 선형적으로 증가하지 않도록 정리되었다.
+
 </details>
