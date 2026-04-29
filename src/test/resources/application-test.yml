@@ -27,3 +27,9 @@ payment:
     url: http://localhost:8081
   store-id: test-store
   api-secret: test-secret
+
+logging:
+  level:
+    org.hibernate.SQL: warn
+    org.hibernate.orm.jdbc.bind: warn
+
