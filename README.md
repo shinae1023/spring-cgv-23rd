@@ -1736,6 +1736,57 @@ public static TheaterFood create(Theater theater, Food food) { ... }
 CONTAINER ID   IMAGE          COMMAND                   CREATED         STATUS         PORTS                                         NAMES
 a4936b9a9daf   mysql:8.0.46   "docker-entrypoint.s…"   2 minutes ago   Up 2 minutes   0.0.0.0:3306->3306/tcp, [::]:3306->3306/tcp   some-mysql`
 
+- 로컬에서 도커 확인
+  <img width="1257" height="694" alt="image" src="https://github.com/user-attachments/assets/783cbb0b-1780-470e-944e-1488ca5e0b5e" />
+
+- ec2로 전송 및 받기
+```docker push shinae1023/ceos-app:latest
+The push refers to repository [docker.io/shinae1023/ceos-app]
+0d3dcfe2168e: Pushed 
+8127c8426a01: Pushed 
+5f83e74af606: Pushed 
+afbbab386f63: Pushed 
+5df7fb31528c: Pushed 
+3687f9de5568: Pushed 
+486a631f69c8: Pushed 
+818154cda96d: Pushed 
+latest: digest: sha256:314931c53a425ffa6625d90d68560f0b187cbcb4c4ab31fbd42276bcdea13fef size: 856
+shinae@shinaeui-MacBookAir shinae1023 % docker buildx create --use --name multiarch-builder
+docker buildx inspect --bootstrap
+docker buildx build \
+  --platform linux/amd64 \
+  -t shinae1023/ceos-app:latest \
+  --push \
+  .
+```
+
+```
+docker pull shinae1023/ceos-app:latest
+latest: Pulling from shinae1023/ceos-app
+b40150c1c271: Pull complete 
+8a89ec8f5419: Pull complete 
+ea035da72e5f: Pull complete 
+1b87cf85ada1: Pull complete 
+3c5d8083e928: Pull complete 
+166e3ac40fca: Pull complete 
+53feb4f7e8f6: Pull complete 
+76af49cb70c6: Download complete 
+Digest: sha256:38d971b756a9790aef213fd63ba43330d5155168d855a4cb6f1ebc22d0156df0
+Status: Downloaded newer image for shinae1023/ceos-app:latest
+docker.io/shinae1023/ceos-app:latest
+```
+
+
+
+- ec2에서 도커 실행
+  `docker run -d   --name ceos-app   -p 8080:8080   --env-file ~/.env   shinae1023/ceos-app:latest
+9c84da5dffb76145163c47e373d7c23ffd303c5b3209f28a0d341c7d5bf4ee18`
+
+- ec2에서 도커 확인
+  `docker ps
+CONTAINER ID   IMAGE                        COMMAND               CREATED         STATUS         PORTS                                         NAMES
+9c84da5dffb7   shinae1023/ceos-app:latest   "java -jar app.jar"   4 seconds ago   Up 4 seconds   0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp   ceos-app`
+
 - 배포 성공
 <img width="1419" height="706" alt="image" src="https://github.com/user-attachments/assets/97a813bc-e5bd-4c9f-9380-3a3fd75a47c1" />
 
