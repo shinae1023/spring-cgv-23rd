@@ -1728,6 +1728,8 @@ public static TheaterFood create(Theater theater, Food food) { ... }
 
 </details>
 
+<details><summary><h1>배포</h1></summary>
+
 - 도커 실행
 <img width="571" height="326" alt="image" src="https://github.com/user-attachments/assets/456e4a9f-ed4b-4701-bcff-7575ea965f6d" />
 
@@ -1931,7 +1933,7 @@ docker logs -f ceos-app
 - RDS Security Group에서 현재 서버의 3306 접근이 허용되어야 함
 - 로컬 Docker 테스트 시에는 내 공인 IP 허용이 필요할 수 있음
 
-### 8. Nginx + 80/443 + 도메인 연결
+### 8. Nginx + 80/443 + 도메인 연결 (여기서부턴 도메인 연결 후 사용)
 
 배포 구조:
 
@@ -1996,3 +1998,95 @@ sudo certbot renew --dry-run
 - EC2 직접 확인: `http://<EC2_PUBLIC_IP>:8080`
 - Swagger: `http://<EC2_PUBLIC_IP>:8080/swagger-ui/index.html`
 - 도메인/Nginx 적용 후: `https://your-domain.com/swagger-ui/index.html`
+
+### 10. CI와 CD에서 Docker가 쓰이는 위치
+
+#### CI
+
+CI의 목적은 PR 또는 `main` 브랜치 변경 시 코드가 깨지지 않았는지 검증하는 것이다.
+
+- GitHub Actions에서 `./gradlew build` 실행
+- 테스트 포함 전체 빌드 통과 여부 확인
+- 이 단계에서는 배포하지 않음
+
+현재 워크플로 파일:
+
+- `.github/workflows/ci.yml`
+
+#### CD
+
+CD의 목적은 `main` 브랜치에 머지된 검증 완료 코드를 실제 서버에 배포하는 것이다.
+
+- `CI`가 성공한 `main` push만 감지
+- jar를 다시 빌드
+- Docker 이미지 생성
+- Docker Hub로 push
+- EC2에 SSH 접속
+- 최신 이미지 pull
+- 기존 컨테이너 종료 후 새 컨테이너 실행
+
+현재 워크플로 파일:
+
+- `.github/workflows/cd.yml`
+
+### 11. 왜 jar 배포보다 Docker 배포가 편한가
+
+#### jar 배포
+
+- 서버에 Java 버전이 직접 설치되어 있어야 함
+- 서버마다 환경 차이로 실행 문제가 생길 수 있음
+- 배포 시 jar 업로드, 프로세스 종료, 재실행을 직접 관리해야 함
+
+#### Docker 배포
+
+- 앱 실행 환경(Java, 실행 명령, 설정 구조)을 이미지에 함께 묶을 수 있음
+- 로컬, EC2, 다른 서버에서 동일한 방식으로 실행 가능
+- 서버에는 Docker만 있으면 됨
+- 배포 시 새 이미지만 pull 받아 교체하면 되므로 운영 흐름이 단순해짐
+
+즉, 이 프로젝트에서는 `jar`를 직접 배포하는 것이 아니라, `jar를 포함한 Docker image`를 배포 단위로 사용한다.
+
+### 12. 현재 워크플로 기준 실제 배포 흐름도
+
+#### 1) Pull Request 생성
+
+- 개발 브랜치에서 `main`으로 PR 생성
+- `CI` 실행
+- `./gradlew build` 통과 여부 확인
+- 실패 시 머지 전 수정
+
+#### 2) PR 머지
+
+- `main` 브랜치에 push 발생
+- `CI` 다시 실행
+- `CI` 성공 시에만 `CD` 실행
+
+#### 3) CD 배포
+
+- GitHub Actions가 Docker 이미지를 빌드
+- `linux/amd64`, `linux/arm64` 멀티 아키텍처 이미지 생성
+- Docker Hub에 `latest`, `commit SHA` 태그로 push
+- GitHub Actions가 EC2에 SSH 접속
+- EC2에서 최신 이미지 pull
+- 기존 `ceos-app` 컨테이너 제거
+- `~/.env`를 사용해 새 컨테이너 실행
+
+#### 4) 사용자 요청 처리
+
+- 사용자는 `80/443` 포트로 접속
+- Nginx가 요청을 `127.0.0.1:8080`으로 프록시
+- Docker 컨테이너 내부 Spring Boot 앱이 요청 처리
+- DB는 AWS RDS 사용
+
+### 13. GitHub Actions Secrets
+
+현재 CD 워크플로에서 사용하는 GitHub Secrets는 아래와 같다.
+
+- `DOCKERHUB_USERNAME`: Docker Hub 계정명
+- `DOCKERHUB_TOKEN`: Docker Hub Personal Access Token
+- `EC2_HOST`: EC2 퍼블릭 IP 또는 도메인
+- `EC2_USERNAME`: 예) `ubuntu`
+- `EC2_SSH_KEY`: EC2 접속용 private key 전체 내용
+
+민감한 애플리케이션 설정값은 GitHub Secrets가 아니라 EC2의 `~/.env`에 둔다.
+</details>
