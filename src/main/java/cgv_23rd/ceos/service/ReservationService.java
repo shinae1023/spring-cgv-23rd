@@ -22,9 +22,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -172,21 +176,26 @@ public class ReservationService {
     }
 
     private void processSeatReservations(Reservation reservation, Long movieScreenId, List<Long> seatIds) {
-        for (Long seatId : seatIds) {
-            Seat seat = seatRepository.findById(seatId)
-                    .orElseThrow(() -> new GeneralException(GeneralErrorCode.SEAT_NOT_FOUND));
+        List<Seat> seats = seatRepository.findAllByIdInWithScreen(seatIds);
+        validateAllSeatsFound(seatIds, seats);
 
-            boolean isAlreadyReserved = reservationSeatRepository
-                    .existsByMovieScreenIdAndSeatIdAndReservation_StatusIn(
-                            movieScreenId, seatId, List.of(ReservationStatus.완료, ReservationStatus.대기)
-                    );
+        Set<Long> reservedSeatIds = new HashSet<>(reservationSeatRepository.findReservedSeatIds(
+                movieScreenId,
+                seatIds,
+                List.of(ReservationStatus.완료, ReservationStatus.대기)
+        ));
 
-            if (isAlreadyReserved) {
-                throw new GeneralException(GeneralErrorCode.RESERVATION_SEAT_DUPLICATION);
-            }
-
-            reservation.addSeat(seat);
+        if (!reservedSeatIds.isEmpty()) {
+            throw new GeneralException(GeneralErrorCode.RESERVATION_SEAT_DUPLICATION);
         }
+
+        Map<Long, Seat> seatById = seats.stream()
+                .collect(Collectors.toMap(Seat::getId, Function.identity()));
+
+        seatIds.stream()
+                .map(seatById::get)
+                .sorted(Comparator.comparing(Seat::getId))
+                .forEach(reservation::addSeat);
     }
 
     private List<String> buildSeatLockKeys(Long movieScreenId, List<Long> seatIds) {
@@ -202,5 +211,11 @@ public class ReservationService {
     private MovieScreen getMovieScreen(Long id) {
         return movieScreenRepository.findById(id)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.MOVIESCREEN_NOT_FOUND));
+    }
+
+    private void validateAllSeatsFound(List<Long> seatIds, List<Seat> seats) {
+        if (seats.size() != seatIds.size()) {
+            throw new GeneralException(GeneralErrorCode.SEAT_NOT_FOUND);
+        }
     }
 }
