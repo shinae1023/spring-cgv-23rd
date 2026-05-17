@@ -1,7 +1,7 @@
 package com.ceos.voteservice.auth.dto;
 
-import com.ceos.voteservice.user.domain.Part;
-import com.ceos.voteservice.user.domain.Team;
+import com.ceos.voteservice.user.entity.Part;
+import com.ceos.voteservice.user.entity.Team;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

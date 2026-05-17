@@ -6,7 +6,7 @@ import com.ceos.voteservice.auth.dto.TokenResponse;
 import com.ceos.voteservice.auth.dto.UserSummary;
 import com.ceos.voteservice.global.exception.DuplicateResourceException;
 import com.ceos.voteservice.global.security.JwtProvider;
-import com.ceos.voteservice.user.domain.User;
+import com.ceos.voteservice.user.entity.User;
 import com.ceos.voteservice.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;

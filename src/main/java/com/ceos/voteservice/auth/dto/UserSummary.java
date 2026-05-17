@@ -1,8 +1,8 @@
 package com.ceos.voteservice.auth.dto;
 
-import com.ceos.voteservice.user.domain.Part;
-import com.ceos.voteservice.user.domain.Team;
-import com.ceos.voteservice.user.domain.User;
+import com.ceos.voteservice.user.entity.Part;
+import com.ceos.voteservice.user.entity.Team;
+import com.ceos.voteservice.user.entity.User;
 
 public record UserSummary(
         Long id,

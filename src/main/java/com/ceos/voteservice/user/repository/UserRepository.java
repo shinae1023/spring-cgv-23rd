@@ -1,6 +1,6 @@
 package com.ceos.voteservice.user.repository;
 
-import com.ceos.voteservice.user.domain.User;
+import com.ceos.voteservice.user.entity.User;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
