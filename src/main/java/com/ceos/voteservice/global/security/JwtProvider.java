@@ -1,6 +1,7 @@
 package com.ceos.voteservice.global.security;
 
-import com.ceos.voteservice.user.domain.User;
+import com.ceos.voteservice.user.entity.User;
+import com.ceos.voteservice.user.entity.UserRole;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
@@ -12,8 +13,10 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
@@ -26,16 +29,19 @@ public class JwtProvider {
 
     private final ObjectMapper objectMapper;
     private final byte[] secret;
+    private final RoleHierarchy roleHierarchy;
 
     @Getter
     private final long expirationSeconds;
 
     public JwtProvider(
             ObjectMapper objectMapper,
+            RoleHierarchy roleHierarchy,
             @Value("${security.jwt.secret}") String secret,
             @Value("${security.jwt.expiration-minutes}") long expirationMinutes
     ) {
         this.objectMapper = objectMapper;
+        this.roleHierarchy = roleHierarchy;
         this.secret = secret.getBytes(StandardCharsets.UTF_8);
         this.expirationSeconds = expirationMinutes * 60;
     }
@@ -50,6 +56,7 @@ public class JwtProvider {
                 "sub", user.getLoginId(),
                 "userId", user.getId(),
                 "name", user.getName(),
+                "role", user.getRole().name(),
                 "iat", now.getEpochSecond(),
                 "exp", now.plusSeconds(expirationSeconds).getEpochSecond()
         );
@@ -82,17 +89,17 @@ public class JwtProvider {
     }
 
     public Authentication getAuthentication(String token) {
-        String loginId = getSubject(token);
+        Map<String, Object> payload = parsePayload(token.split("\\.")[1]);
+        String loginId = (String) payload.get("sub");
+        UserRole role = UserRole.valueOf((String) payload.get("role"));
+        List<GrantedAuthority> authorities = List.copyOf(roleHierarchy.getReachableGrantedAuthorities(
+                List.of(new SimpleGrantedAuthority("ROLE_" + role.name()))
+        ));
         return new UsernamePasswordAuthenticationToken(
-                loginId,
+                payload.get("userId").toString(),
                 null,
-                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                authorities
         );
-    }
-
-    private String getSubject(String token) {
-        String payload = token.split("\\.")[1];
-        return (String) parsePayload(payload).get("sub");
     }
 
     private Map<String, Object> parsePayload(String payload) {

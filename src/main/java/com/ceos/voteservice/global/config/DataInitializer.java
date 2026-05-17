@@ -1,8 +1,9 @@
 package com.ceos.voteservice.global.config;
 
-import com.ceos.voteservice.user.domain.Part;
-import com.ceos.voteservice.user.domain.Team;
-import com.ceos.voteservice.user.domain.User;
+import com.ceos.voteservice.user.entity.Part;
+import com.ceos.voteservice.user.entity.Team;
+import com.ceos.voteservice.user.entity.User;
+import com.ceos.voteservice.user.entity.UserRole;
 import com.ceos.voteservice.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -31,6 +32,7 @@ public class DataInitializer {
                     .name("CEOS")
                     .part(Part.BACKEND)
                     .team(Team.IPX)
+                    .role(UserRole.ADMIN)
                     .build());
         };
     }

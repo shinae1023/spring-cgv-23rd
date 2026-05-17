@@ -1,4 +1,4 @@
-package com.ceos.voteservice.user.domain;
+package com.ceos.voteservice.user.entity;
 
 public enum Team {
     IPX,
