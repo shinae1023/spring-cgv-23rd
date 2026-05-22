@@ -23,7 +23,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class FoodOrderService {
     private final FoodRepository foodRepository;
     private final FoodOrderRepository foodOrderRepository;
@@ -32,6 +31,7 @@ public class FoodOrderService {
     private final UserService userService;
 
     // 1. 음식 주문
+    @Transactional
     public Long createFoodOrder(Long userId, FoodOrderRequestDto requestDto) {
         User user = userService.getUser(userId);
         Theater theater = getTheater(requestDto.theaterId());

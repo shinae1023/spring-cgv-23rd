@@ -13,6 +13,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 @Entity
@@ -101,22 +102,33 @@ public class Reservation extends BaseEntity {
     }
 
     public void markPaymentPaid() {
-        validatePaymentIdExists();
+        validateTransitionTo(PaymentStatus.PAID, EnumSet.of(PaymentStatus.PROCESSING), EnumSet.of(ReservationStatus.대기));
         this.paymentStatus = PaymentStatus.PAID;
     }
 
     public void markPaymentFailed() {
-        validatePaymentIdExists();
+        if (this.paymentStatus == PaymentStatus.FAILED) {
+            return;
+        }
+        validateTransitionTo(PaymentStatus.FAILED, EnumSet.of(PaymentStatus.PROCESSING), EnumSet.of(ReservationStatus.대기));
         this.paymentStatus = PaymentStatus.FAILED;
     }
 
     public void markPaymentUnknown() {
-        validatePaymentIdExists();
+        if (this.paymentStatus == PaymentStatus.UNKNOWN) {
+            return;
+        }
+        validateTransitionTo(PaymentStatus.UNKNOWN, EnumSet.of(PaymentStatus.PROCESSING), EnumSet.of(ReservationStatus.대기));
         this.paymentStatus = PaymentStatus.UNKNOWN;
     }
 
     public void markPaymentCancelled() {
-        validatePaymentIdExists();
+        if (this.paymentStatus == PaymentStatus.CANCELLED) {
+            return;
+        }
+        validateTransitionTo(PaymentStatus.CANCELLED,
+                EnumSet.of(PaymentStatus.PAID, PaymentStatus.UNKNOWN),
+                EnumSet.of(ReservationStatus.대기, ReservationStatus.완료));
         this.paymentStatus = PaymentStatus.CANCELLED;
     }
 
@@ -180,6 +192,22 @@ public class Reservation extends BaseEntity {
     private void validatePaymentIdExists() {
         if (this.paymentId == null || this.paymentId.isBlank()) {
             throw new GeneralException(GeneralErrorCode.PAYMENT_NOT_READY, "결제 식별자가 없는 예매입니다.");
+        }
+    }
+
+    private void validateTransitionTo(PaymentStatus targetStatus,
+                                      EnumSet<PaymentStatus> allowedPaymentStatuses,
+                                      EnumSet<ReservationStatus> allowedReservationStatuses) {
+        validatePaymentIdExists();
+
+        if (!allowedReservationStatuses.contains(this.status)) {
+            throw new GeneralException(GeneralErrorCode.PAYMENT_NOT_READY,
+                    "현재 예매 상태에서는 결제 상태를 " + targetStatus + "로 변경할 수 없습니다.");
+        }
+
+        if (!allowedPaymentStatuses.contains(this.paymentStatus)) {
+            throw new GeneralException(GeneralErrorCode.PAYMENT_NOT_READY,
+                    "현재 결제 상태에서는 " + targetStatus + "로 변경할 수 없습니다. current=" + this.paymentStatus);
         }
     }
 }

@@ -84,7 +84,6 @@ public class FoodPaymentFacade {
                     throw e;
                 }
             } else {
-                foodOrderService.markPaymentUnknown(userId, orderId);
                 log.warn("food payment returned unexpected response",
                         kv("event", "food_payment_unexpected_response"),
                         kv("userId", userId),

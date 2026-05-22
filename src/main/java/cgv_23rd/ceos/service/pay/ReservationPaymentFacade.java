@@ -109,7 +109,22 @@ public class ReservationPaymentFacade {
                 throw new GeneralException(GeneralErrorCode.PAYMENT_NOT_READY, "결제 식별자가 없는 완료 예매입니다.");
             }
 
-            reservationService.cancelPaidReservation(userId, reservationId, reservation.getPaymentId());
+            PaymentResponse response;
+            try {
+                response = paymentService.cancelPayment(reservation.getPaymentId());
+            } catch (GeneralException e) {
+                reservationService.markPaymentUnknown(userId, reservationId);
+                throw e;
+            }
+
+            if (response == null
+                    || response.data() == null
+                    || PaymentStatus.from(response.data().paymentStatus()) != PaymentStatus.CANCELLED) {
+                reservationService.markPaymentUnknown(userId, reservationId);
+                throw new GeneralException(GeneralErrorCode.PAYMENT_NOT_CANCELLABLE);
+            }
+
+            reservationService.cancelPaidReservationAfterPaymentCancellation(userId, reservationId);
             auditLogger.info("reservation payment cancelled",
                     kv("event", "reservation_payment_cancelled"),
                     kv("userId", userId),

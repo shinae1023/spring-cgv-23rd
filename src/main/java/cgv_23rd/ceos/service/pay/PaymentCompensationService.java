@@ -31,7 +31,7 @@ public class PaymentCompensationService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void cancelFoodOrder(Long orderId) {
-        FoodOrder foodOrder = foodOrderRepository.findById(orderId)
+        FoodOrder foodOrder = foodOrderRepository.findByIdWithLock(orderId)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.FOOD_ORDER_NOT_FOUND));
         foodOrder.markPaymentCancelled();
         foodOrder.cancel();

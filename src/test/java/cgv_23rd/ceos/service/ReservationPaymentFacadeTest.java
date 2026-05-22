@@ -83,10 +83,12 @@ class ReservationPaymentFacadeTest {
     void cancelReservation_paidReservation_callsExternalCancelFirst() {
         Reservation reservation = createCompletedReservation(1L, 1L, "RES_1_12345678");
         given(reservationService.getOwnedReservation(1L, 1L)).willReturn(reservation);
+        given(paymentService.cancelPayment("RES_1_12345678")).willReturn(paidResponse("CANCELLED"));
 
         reservationPaymentFacade.cancelReservation(1L, 1L);
 
-        verify(reservationService).cancelPaidReservation(1L, 1L, "RES_1_12345678");
+        verify(paymentService).cancelPayment("RES_1_12345678");
+        verify(reservationService).cancelPaidReservationAfterPaymentCancellation(1L, 1L);
     }
 
     @Test
@@ -95,11 +97,13 @@ class ReservationPaymentFacadeTest {
         Reservation reservation = createCompletedReservation(1L, 1L, "RES_1_12345678");
         given(reservationService.getOwnedReservation(1L, 1L)).willReturn(reservation);
         willThrow(new GeneralException(GeneralErrorCode.PAYMENT_SERVER_FAILED))
-                .given(reservationService).cancelPaidReservation(1L, 1L, "RES_1_12345678");
+                .given(paymentService).cancelPayment("RES_1_12345678");
 
         assertThrows(GeneralException.class, () -> reservationPaymentFacade.cancelReservation(1L, 1L));
 
-        verify(reservationService).cancelPaidReservation(1L, 1L, "RES_1_12345678");
+        verify(paymentService).cancelPayment("RES_1_12345678");
+        verify(reservationService).markPaymentUnknown(1L, 1L);
+        verify(reservationService, never()).cancelPaidReservationAfterPaymentCancellation(anyLong(), anyLong());
         verify(reservationService, never()).cancelReservation(1L, 1L);
     }
 

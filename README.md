@@ -327,7 +327,153 @@ processOrder 시작 (신규 물리 트랜잭션 1 시작)
 ```
 
 REQUIRES_NEW보다 DB Connection 낭비를 줄이면서, 부분 롤백(특정 작업 실패 시 메인 작업은 유지)이 필요할 때 사용 (단, JPA에서는 지원하지 않으며 JDBC Savepoint 기능에 의존)
-  
+
+## 트랜잭션 개선 사항
+
+이번 리팩토링에서는 결제/취소/만료 스케줄러 흐름을 중심으로 트랜잭션 경계를 다시 정리함
+목표는 다음 3가지 :
+
+- 외부 API 호출과 DB 트랜잭션을 명확히 분리
+- 클래스 레벨 `@Transactional` 남용을 줄이고 메서드 단위로 경계를 드러냄
+- 상태 전이 규칙을 강화해 잘못된 결제 상태 변경을 막음
+
+---
+
+### 1. 예매 취소 플로우에서 외부 결제 취소를 트랜잭션 밖으로 분리
+
+기존 `ReservationService.cancelPaidReservation()`은 클래스 레벨 `@Transactional` 안에서 바로 외부 결제 취소 API를 호출하고 있었음
+
+이 구조는 다음 문제가 있었음
+
+- 외부 네트워크 대기 시간 동안 트랜잭션 경계가 길어짐
+- 결제 성공 플로우와 취소 플로우의 설계 원칙이 일관되지 않음
+- 서비스 계층이 외부 API 호출과 로컬 상태 변경을 동시에 책임짐
+
+이를 개선하기 위해 역할을 다음처럼 분리함
+
+- `ReservationPaymentFacade`
+  외부 PG 취소 API 호출 담당
+- `ReservationService`
+  외부 취소가 성공한 뒤 로컬 DB 상태 변경만 담당
+
+즉, 흐름은 아래처럼 바뀌었다.
+
+1. `ReservationPaymentFacade`에서 완료 예매 여부 확인
+2. `paymentService.cancelPayment(...)` 호출
+3. 취소 성공 응답 확인
+4. 그 후에만 `reservationService.cancelPaidReservationAfterPaymentCancellation(...)` 호출
+5. 짧은 로컬 트랜잭션에서 `paymentStatus=CANCELLED`, `status=취소` 반영
+
+이로써 외부 API 호출과 DB 상태 변경의 책임이 분리되었고, 긴 트랜잭션을 줄일 수 있게 됨
+
+### 2. 클래스 레벨 `@Transactional` 제거 및 메서드 단위 경계 명시
+
+기존에는 일부 서비스에 클래스 레벨 `@Transactional`이 걸려 있었음
+
+- `ReservationService`
+- `FoodOrderService`
+- `ReviewService`
+
+이 방식은 빠르게 적용하기는 쉽지만, 다음 문제가 있는데
+
+- 새 메서드가 추가될 때 의도치 않게 모두 쓰기 트랜잭션이 됨
+- 내부 호출(self-invocation) 때문에 메서드별 어노테이션 의도가 흐려질 수 있음
+- 읽기/쓰기 메서드의 구분이 코드에서 잘 드러나지 않음
+
+개선 후에는 다음 원칙으로 바꿈
+
+- 쓰기 메서드에만 `@Transactional`
+- 조회 메서드는 `@Transactional(readOnly = true)`
+- 클래스 레벨 선언은 제거
+
+예를 들어 다음 메서드들만 명시적으로 트랜잭션을 갖도록 정리함
+
+- 예매 생성, 결제 준비, 결제 확정, 취소
+- 매점 주문 생성, 결제 준비, 재고 차감, 취소
+- 리뷰 생성
+
+이렇게 하면 트랜잭션 경계가 코드에서 더 분명하게 드러나고, 추후 유지보수 시 실수 가능성이 감소
+
+### 3. 만료 스케줄러의 내부 호출 트랜잭션 문제 분리
+
+기존 `PendingOrderExpirationService`는 다음 구조였음
+
+- `expirePendingReservationsAndFoodOrders()`
+  내부에서
+  - `expirePendingReservations()`
+  - `expirePendingFoodOrders()`
+    호출
+
+하지만 같은 클래스 내부 호출은 스프링 프록시를 타지 않기 때문에, 안쪽 메서드의 `@Transactional`이 독립적으로 적용되지 않음
+
+즉, 선언상으로는 분리된 것처럼 보여도 실제로는 하나의 큰 트랜잭션처럼 동작할 수 있음
+
+이를 해결하기 위해 만료 책임을 분리하는 두 개의 서비스로 나눔
+
+- `PendingReservationExpirationService`
+- `PendingFoodOrderExpirationService`
+
+그리고 `PendingOrderExpirationService`는 두 서비스를 호출하는 오케스트레이션 역할만 담당하게 함
+
+이 구조의 장점 : 
+
+- 예약 만료와 매점 주문 만료의 트랜잭션 경계가 실제로 분리
+- 한쪽 실패가 다른 쪽 처리에 불필요하게 영향을 주는 구조를 줄일 수 있음
+- 코드상 의도와 실제 런타임 동작이 일치
+
+### 4. 보상 트랜잭션의 락 정책 통일
+
+보상 처리용 `PaymentCompensationService`는 `REQUIRES_NEW`를 사용해 독립 트랜잭션으로 보상 로직을 수행함
+
+기존에는 다음 차이가 있었는데
+
+- 예매 보상 취소는 `findByIdWithLock(...)`
+- 매점 주문 보상 취소는 일반 `findById(...)`
+
+이 차이는 동시성 상황에서 음식 주문 보상 처리 쪽이 더 약한 구조이므로
+개선 후에는 매점 주문 보상 취소도 `findByIdWithLock(...)`로 맞춤
+
+이렇게 맞춘 이유 : 
+
+- 보상 로직도 결국 상태 변경이므로 락 정책이 일관되어야 함
+- 사용자 취소, 스케줄러 만료, 보상 처리 등이 겹칠 때 상태 경합을 줄일 수 있음
+- 실패 복구 경로는 특히 더 보수적으로 설계하는 편이 안전함
+
+### 5. 주문/예매의 결제 상태 전이 규칙 강화
+
+기존에도 `assignPaymentId`, `confirm` 등 일부 검증은 있었지만, `markPaymentPaid`, `markPaymentFailed`, `markPaymentUnknown`, `markPaymentCancelled`는 상대적으로 전이 규칙이 느슨했음
+
+이 상태에서는 아래와 같은 문제가 생길 수 있음
+
+- 이미 완료된 주문/예매에 잘못된 결제 상태를 덮어쓸 수 있음
+- `PROCESSING`이 아닌 상태에서 `FAILED`, `UNKNOWN`으로 바뀌는 실수를 막기 어려움
+- 보상/예외 처리 중 중복 호출이 일어날 때 의도치 않은 상태 변경이 생길 수 있음
+
+이를 개선하기 위해 `Reservation`, `FoodOrder` 엔티티에 상태 전이 검증을 추가힘
+
+- `PAID` 전이
+  `PROCESSING -> PAID`만 허용
+- `FAILED` 전이
+  `PROCESSING -> FAILED`만 허용
+- `UNKNOWN` 전이
+  `PROCESSING -> UNKNOWN`만 허용
+- `CANCELLED` 전이
+  `PAID` 또는 `UNKNOWN` 상태에서만 허용
+- 잘못된 전이는 `PAYMENT_NOT_READY` 예외로 차단
+- 이미 같은 상태인 경우 일부 메서드는 idempotent 하게 무시
+
+이로써 서비스 계층에서 한 번 더 방어하고, 최종적으로는 도메인 엔티티가 자기 상태를 스스로 지킬 수 있게 함
+
+### 최종 효과
+
+- 외부 결제 호출과 DB 트랜잭션 경계가 더 명확해짐
+- 취소 플로우가 결제 플로우와 동일한 설계 원칙
+- 클래스 레벨 트랜잭션으로 인한 과도한 경계 확장을 감소
+- 스케줄러 만료 처리의 실제 트랜잭션 동작이 선언과 일치
+- 보상 처리의 동시성 안정성이 높아짐
+- 결제 상태 전이 규칙이 강화되어 잘못된 상태 변경 가능성이 줄어듦
+
+
 ## 운영 로깅 개선
 
 ### 이번 리팩토링에서 적용한 내용

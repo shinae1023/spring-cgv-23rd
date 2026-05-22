@@ -1,8 +1,6 @@
 package cgv_23rd.ceos.service;
 
 import cgv_23rd.ceos.dto.reservation.request.ReservationRequestDto;
-import cgv_23rd.ceos.dto.payment.response.PaymentResponse;
-import cgv_23rd.ceos.entity.enums.PaymentStatus;
 import cgv_23rd.ceos.entity.enums.ReservationStatus;
 import cgv_23rd.ceos.entity.movie.MovieScreen;
 import cgv_23rd.ceos.entity.reservation.Reservation;
@@ -15,7 +13,6 @@ import cgv_23rd.ceos.repository.reservation.ReservationRepository;
 import cgv_23rd.ceos.repository.reservation.ReservationSeatRepository;
 import cgv_23rd.ceos.repository.reservation.SeatRepository;
 import cgv_23rd.ceos.service.lock.ReservationNamedLockManager;
-import cgv_23rd.ceos.service.pay.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -32,17 +29,16 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final ReservationSeatRepository reservationSeatRepository;
     private final MovieScreenRepository movieScreenRepository;
     private final SeatRepository seatRepository;
     private final ReservationNamedLockManager reservationNamedLockManager;
-    private final PaymentService paymentService;
     private final UserService userService;
 
     // 1. 영화 예매
+    @Transactional
     public Long createReservation(Long userId, ReservationRequestDto requestDto) {
         validateSeatRequest(requestDto);
         User user = userService.getUser(userId);
@@ -99,9 +95,7 @@ public class ReservationService {
 
     @Transactional
     public void markPaymentCancelled(Long userId, Long reservationId) {
-        Reservation reservation = reservationRepository.findByIdWithLock(reservationId)
-                .orElseThrow(() -> new GeneralException(GeneralErrorCode.RESERVATION_NOT_FOUND));
-        validateOwner(userId, reservation);
+        Reservation reservation = getOwnedReservationForUpdate(userId, reservationId);
         reservation.markPaymentCancelled();
     }
 
@@ -114,41 +108,14 @@ public class ReservationService {
     }
 
     @Transactional
-    public Reservation getReservationWithLock(Long reservationId) {
-        return reservationRepository.findByIdWithLock(reservationId)
-                .orElseThrow(() -> new GeneralException(GeneralErrorCode.RESERVATION_NOT_FOUND));
-    }
-
-    @Transactional
-    public Reservation getOwnedReservationWithLock(Long userId, Long reservationId) {
-        Reservation reservation = getReservationWithLock(reservationId);
-        validateOwner(userId, reservation);
-        return reservation;
-    }
-
-    // 2. 영화 예매 취소
     public void cancelReservation(Long userId, Long reservationId) {
-        Reservation reservation = getOwnedReservationWithLock(userId, reservationId);
+        Reservation reservation = getOwnedReservationForUpdate(userId, reservationId);
         reservation.cancel(LocalDateTime.now());
     }
 
-    public void cancelPaidReservation(Long userId, Long reservationId, String paymentId) {
-        PaymentResponse response;
-        try {
-            response = paymentService.cancelPayment(paymentId);
-        } catch (GeneralException e) {
-            markPaymentUnknown(userId, reservationId);
-            throw e;
-        }
-
-        if (response == null
-                || response.data() == null
-                || PaymentStatus.from(response.data().paymentStatus()) != PaymentStatus.CANCELLED) {
-            markPaymentUnknown(userId, reservationId);
-            throw new GeneralException(GeneralErrorCode.PAYMENT_NOT_CANCELLABLE);
-        }
-
-        Reservation reservation = getOwnedReservationWithLock(userId, reservationId);
+    @Transactional
+    public void cancelPaidReservationAfterPaymentCancellation(Long userId, Long reservationId) {
+        Reservation reservation = getOwnedReservationForUpdate(userId, reservationId);
         reservation.markPaymentCancelled();
         reservation.cancel(LocalDateTime.now());
     }
@@ -204,13 +171,16 @@ public class ReservationService {
                 .toList();
     }
 
-    private void validateUserExists(Long userId) {
-        userService.getUser(userId);
-    }
-
     private MovieScreen getMovieScreen(Long id) {
         return movieScreenRepository.findById(id)
                 .orElseThrow(() -> new GeneralException(GeneralErrorCode.MOVIESCREEN_NOT_FOUND));
+    }
+
+    private Reservation getOwnedReservationForUpdate(Long userId, Long reservationId) {
+        Reservation reservation = reservationRepository.findByIdWithLock(reservationId)
+                .orElseThrow(() -> new GeneralException(GeneralErrorCode.RESERVATION_NOT_FOUND));
+        validateOwner(userId, reservation);
+        return reservation;
     }
 
     private void validateAllSeatsFound(List<Long> seatIds, List<Seat> seats) {

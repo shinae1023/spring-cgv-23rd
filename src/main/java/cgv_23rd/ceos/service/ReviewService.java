@@ -17,8 +17,8 @@ import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class ReviewService {
     private final ReviewRepository reviewRepository;
@@ -30,6 +30,7 @@ public class ReviewService {
             @CacheEvict(value = "movieReviews", key = "#requestDto.movieId()"),
             @CacheEvict(value = "movieDetail", key = "#requestDto.movieId()")
     })
+    @Transactional
     @Retryable(
             retryFor = ObjectOptimisticLockingFailureException.class,
             maxAttempts = 3,

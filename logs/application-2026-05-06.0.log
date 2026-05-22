@@ -1,0 +1,737 @@
+2026-05-06 15:20:08.900 [Test worker] ERROR o.s.b.d.LoggingFailureAnalysisReporter - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Failed to bind properties under 'logging.level.file.name' to org.springframework.boot.logging.LogLevel:
+
+    Property: logging.level.file.name
+    Value: "logs/application.log"
+    Origin: class path resource [application.yml] - 29:13
+    Reason: failed to convert java.lang.String to org.springframework.boot.logging.LogLevel (caused by java.lang.IllegalArgumentException: No enum constant org.springframework.boot.logging.LogLevel.logs/application.log)
+
+Action:
+
+Update your application's configuration. The following values are valid:
+
+    DEBUG
+    ERROR
+    FATAL
+    INFO
+    OFF
+    TRACE
+    WARN
+
+2026-05-06 15:20:08.902 [Test worker] WARN  o.s.test.context.TestContextManager - Caught exception while allowing TestExecutionListener [org.springframework.test.context.web.ServletTestExecutionListener] to prepare test instance [cgv_23rd.ceos.ApplicationTests@372ca2d6]
+java.lang.IllegalStateException: Failed to load ApplicationContext for [WebMergedContextConfiguration@291373d3 testClass = cgv_23rd.ceos.ApplicationTests, locations = [], classes = [cgv_23rd.ceos.Application], contextInitializerClasses = [], activeProfiles = ["test"], propertySourceDescriptors = [], propertySourceProperties = ["org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true"], contextCustomizers = [org.springframework.boot.test.autoconfigure.OnFailureConditionReportContextCustomizerFactory$OnFailureConditionReportContextCustomizer@72758afa, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@0, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@f667fe, org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@10c626be, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@201b6b6f, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@2bb7bd00, org.springframework.boot.test.web.reactor.netty.DisableReactorResourceFactoryGlobalResourcesContextCustomizerFactory$DisableReactorResourceFactoryGlobalResourcesContextCustomizerCustomizer@7c2b6087, org.springframework.test.context.support.DynamicPropertiesContextCustomizer@0, org.springframework.boot.test.context.SpringBootTestAnnotation@d50f8207], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:180)
+	at org.springframework.test.context.support.DefaultTestContext.getApplicationContext(DefaultTestContext.java:130)
+	at org.springframework.test.context.web.ServletTestExecutionListener.setUpRequestContextIfNecessary(ServletTestExecutionListener.java:200)
+	at org.springframework.test.context.web.ServletTestExecutionListener.prepareTestInstance(ServletTestExecutionListener.java:139)
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:260)
+	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:159)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$10(ClassBasedTestDescriptor.java:383)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.executeAndMaskThrowable(ClassBasedTestDescriptor.java:388)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$11(ClassBasedTestDescriptor.java:382)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.invokeTestInstancePostProcessors(ClassBasedTestDescriptor.java:382)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$instantiateAndPostProcessTestInstance$6(ClassBasedTestDescriptor.java:293)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.instantiateAndPostProcessTestInstance(ClassBasedTestDescriptor.java:292)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$4(ClassBasedTestDescriptor.java:281)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$5(ClassBasedTestDescriptor.java:280)
+	at org.junit.jupiter.engine.execution.TestInstancesProvider.getTestInstances(TestInstancesProvider.java:27)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$prepare$0(TestMethodTestDescriptor.java:112)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:111)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$prepare$2(NodeTestTask.java:128)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.prepare(NodeTestTask.java:128)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:201)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:170)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:94)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:59)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:142)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$1(InterceptingLauncher.java:39)
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25)
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:38)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestDefinitionProcessor$CollectThenExecuteTestDefinitionConsumer.processAllTestDefinitions(JUnitPlatformTestDefinitionProcessor.java:179)
+	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestDefinitionProcessor$CollectThenExecuteTestDefinitionConsumer.access$000(JUnitPlatformTestDefinitionProcessor.java:122)
+	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestDefinitionProcessor.stop(JUnitPlatformTestDefinitionProcessor.java:116)
+	at org.gradle.api.internal.tasks.testing.SuiteTestDefinitionProcessor.stop(SuiteTestDefinitionProcessor.java:63)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.gradle.internal.dispatch.MethodInvocation.invokeOn(MethodInvocation.java:77)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:28)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:19)
+	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:33)
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:88)
+	at jdk.proxy1/jdk.proxy1.$Proxy4.stop(Unknown Source)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker$3.run(TestWorker.java:195)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.executeAndMaintainThreadName(TestWorker.java:126)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:103)
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:63)
+	at org.gradle.process.internal.worker.child.ActionExecutionWorker.execute(ActionExecutionWorker.java:56)
+	at org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:122)
+	at org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:72)
+	at worker.org.gradle.process.internal.worker.GradleWorkerMain.run(GradleWorkerMain.java:69)
+	at worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
+Caused by: org.springframework.boot.context.properties.bind.BindException: Failed to bind properties under 'logging.level.file.name' to org.springframework.boot.logging.LogLevel
+	at org.springframework.boot.context.properties.bind.Binder.handleBindError(Binder.java:399)
+	at org.springframework.boot.context.properties.bind.Binder.bind(Binder.java:361)
+	at org.springframework.boot.context.properties.bind.Binder.lambda$bindAggregate$2(Binder.java:447)
+	at org.springframework.boot.context.properties.bind.Binder$Context.withSource(Binder.java:577)
+	at org.springframework.boot.context.properties.bind.Binder.lambda$bindAggregate$3(Binder.java:448)
+	at org.springframework.boot.context.properties.bind.AggregateElementBinder.bind(AggregateElementBinder.java:39)
+	at org.springframework.boot.context.properties.bind.MapBinder$EntryBinder.lambda$bindEntries$0(MapBinder.java:184)
+	at java.base/java.util.HashMap.computeIfAbsent(HashMap.java:1228)
+	at org.springframework.boot.context.properties.bind.MapBinder$EntryBinder.bindEntries(MapBinder.java:184)
+	at org.springframework.boot.context.properties.bind.MapBinder.bindAggregate(MapBinder.java:74)
+	at org.springframework.boot.context.properties.bind.AggregateBinder.bind(AggregateBinder.java:56)
+	at org.springframework.boot.context.properties.bind.Binder.lambda$bindAggregate$4(Binder.java:450)
+	at org.springframework.boot.context.properties.bind.Binder$Context.withIncreasedDepth(Binder.java:606)
+	at org.springframework.boot.context.properties.bind.Binder.bindAggregate(Binder.java:450)
+	at org.springframework.boot.context.properties.bind.Binder.bindObject(Binder.java:411)
+	at org.springframework.boot.context.properties.bind.Binder.bind(Binder.java:357)
+	at org.springframework.boot.context.properties.bind.Binder.bind(Binder.java:345)
+	at org.springframework.boot.context.properties.bind.Binder.bind(Binder.java:275)
+	at org.springframework.boot.context.properties.bind.Binder.bind(Binder.java:249)
+	at org.springframework.boot.context.logging.LoggingApplicationListener.setLogLevels(LoggingApplicationListener.java:393)
+	at org.springframework.boot.context.logging.LoggingApplicationListener.initializeFinalLoggingLevels(LoggingApplicationListener.java:360)
+	at org.springframework.boot.context.logging.LoggingApplicationListener.initialize(LoggingApplicationListener.java:299)
+	at org.springframework.boot.context.logging.LoggingApplicationListener.onApplicationEnvironmentPreparedEvent(LoggingApplicationListener.java:246)
+	at org.springframework.boot.context.logging.LoggingApplicationListener.onApplicationEvent(LoggingApplicationListener.java:223)
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.doInvokeListener(SimpleApplicationEventMulticaster.java:185)
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.invokeListener(SimpleApplicationEventMulticaster.java:178)
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.multicastEvent(SimpleApplicationEventMulticaster.java:156)
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.multicastEvent(SimpleApplicationEventMulticaster.java:138)
+	at org.springframework.boot.context.event.EventPublishingRunListener.multicastInitialEvent(EventPublishingRunListener.java:136)
+	at org.springframework.boot.context.event.EventPublishingRunListener.environmentPrepared(EventPublishingRunListener.java:81)
+	at org.springframework.boot.SpringApplicationRunListeners.lambda$environmentPrepared$2(SpringApplicationRunListeners.java:64)
+	at java.base/java.lang.Iterable.forEach(Iterable.java:75)
+	at org.springframework.boot.SpringApplicationRunListeners.doWithListeners(SpringApplicationRunListeners.java:118)
+	at org.springframework.boot.SpringApplicationRunListeners.doWithListeners(SpringApplicationRunListeners.java:112)
+	at org.springframework.boot.SpringApplicationRunListeners.environmentPrepared(SpringApplicationRunListeners.java:63)
+	at org.springframework.boot.SpringApplication.prepareEnvironment(SpringApplication.java:353)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:313)
+	at org.springframework.boot.test.context.SpringBootContextLoader.lambda$loadContext$3(SpringBootContextLoader.java:144)
+	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:58)
+	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:46)
+	at org.springframework.boot.SpringApplication.withHook(SpringApplication.java:1462)
+	at org.springframework.boot.test.context.SpringBootContextLoader$ContextLoaderHook.run(SpringBootContextLoader.java:563)
+	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:144)
+	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:110)
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContextInternal(DefaultCacheAwareContextLoaderDelegate.java:225)
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:152)
+	... 92 common frames omitted
+Caused by: org.springframework.core.convert.ConversionFailedException: Failed to convert from type [java.lang.String] to type [org.springframework.boot.logging.LogLevel] for value [logs/application.log]
+	at org.springframework.core.convert.support.ConversionUtils.invokeConverter(ConversionUtils.java:47)
+	at org.springframework.core.convert.support.GenericConversionService.convert(GenericConversionService.java:182)
+	at org.springframework.boot.context.properties.bind.BindConverter.convert(BindConverter.java:110)
+	at org.springframework.boot.context.properties.bind.BindConverter.convert(BindConverter.java:101)
+	at org.springframework.boot.context.properties.bind.BindConverter.convert(BindConverter.java:93)
+	at org.springframework.boot.context.properties.bind.Binder.bindProperty(Binder.java:471)
+	at org.springframework.boot.context.properties.bind.Binder.bindObject(Binder.java:415)
+	at org.springframework.boot.context.properties.bind.Binder.bind(Binder.java:357)
+	... 136 common frames omitted
+Caused by: java.lang.IllegalArgumentException: No enum constant org.springframework.boot.logging.LogLevel.logs/application.log
+	at org.springframework.boot.convert.LenientObjectToEnumConverterFactory$LenientToEnumConverter.findEnum(LenientObjectToEnumConverterFactory.java:93)
+	at org.springframework.boot.convert.LenientObjectToEnumConverterFactory$LenientToEnumConverter.convert(LenientObjectToEnumConverterFactory.java:80)
+	at org.springframework.boot.convert.LenientObjectToEnumConverterFactory$LenientToEnumConverter.convert(LenientObjectToEnumConverterFactory.java:61)
+	at org.springframework.core.convert.support.GenericConversionService$ConverterFactoryAdapter.convert(GenericConversionService.java:415)
+	at org.springframework.core.convert.support.ConversionUtils.invokeConverter(ConversionUtils.java:41)
+	... 143 common frames omitted
+2026-05-06 15:20:34.621 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.2.Final
+2026-05-06 15:20:34.635 [Test worker] INFO  cgv_23rd.ceos.ApplicationTests - Starting ApplicationTests using Java 21.0.10 with PID 8281 (started by shinae in /Users/shinae/Desktop/study/shinae1023)
+2026-05-06 15:20:34.635 [Test worker] INFO  cgv_23rd.ceos.ApplicationTests - The following 1 profile is active: "test"
+2026-05-06 15:20:35.322 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-06 15:20:35.380 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 52 ms. Found 21 JPA repository interfaces.
+2026-05-06 15:20:35.491 [Test worker] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=7aed13ff-a551-3fce-a7e0-8f429556ea6c
+2026-05-06 15:20:35.725 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-06 15:20:35.756 [Test worker] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.6.15.Final
+2026-05-06 15:20:35.774 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-05-06 15:20:35.918 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-06 15:20:35.934 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-05-06 15:20:36.029 [Test worker] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:testdb user=SA
+2026-05-06 15:20:36.030 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-05-06 15:20:36.046 [Test worker] WARN  org.hibernate.orm.deprecation - HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-05-06 15:20:36.057 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-05-06 15:20:36.702 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-06 15:20:36.765 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:36.945 [Test worker] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-05-06 15:20:37.570 [Test worker] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-05-06 15:20:37.960 [Test worker] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoints beneath base path '/actuator'
+2026-05-06 15:20:37.985 [Test worker] INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name userDetailsServiceImpl
+2026-05-06 15:20:38.346 [Test worker] INFO  cgv_23rd.ceos.ApplicationTests - Started ApplicationTests in 3.973 seconds (process running for 4.795)
+2026-05-06 15:20:38.410 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending reservations. deletedSeats=0, expiredReservations=0
+2026-05-06 15:20:38.413 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending food orders. expiredFoodOrders=0
+2026-05-06 15:20:38.713 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:38.721 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-05-06 15:20:38.723 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-05-06 15:20:45.160 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.2.Final
+2026-05-06 15:20:45.173 [Test worker] INFO  cgv_23rd.ceos.ApplicationTests - Starting ApplicationTests using Java 21.0.10 with PID 8342 (started by shinae in /Users/shinae/Desktop/study/shinae1023)
+2026-05-06 15:20:45.174 [Test worker] INFO  cgv_23rd.ceos.ApplicationTests - The following 1 profile is active: "test"
+2026-05-06 15:20:45.778 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-06 15:20:45.825 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 40 ms. Found 21 JPA repository interfaces.
+2026-05-06 15:20:45.933 [Test worker] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=7aed13ff-a551-3fce-a7e0-8f429556ea6c
+2026-05-06 15:20:46.214 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-06 15:20:46.244 [Test worker] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.6.15.Final
+2026-05-06 15:20:46.262 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-05-06 15:20:46.422 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-06 15:20:46.437 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-05-06 15:20:46.541 [Test worker] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:testdb user=SA
+2026-05-06 15:20:46.543 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-05-06 15:20:46.559 [Test worker] WARN  org.hibernate.orm.deprecation - HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-05-06 15:20:46.571 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-05-06 15:20:47.254 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-06 15:20:47.313 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:47.537 [Test worker] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-05-06 15:20:48.231 [Test worker] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-05-06 15:20:48.650 [Test worker] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoints beneath base path '/actuator'
+2026-05-06 15:20:48.675 [Test worker] INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name userDetailsServiceImpl
+2026-05-06 15:20:49.007 [Test worker] INFO  cgv_23rd.ceos.ApplicationTests - Started ApplicationTests in 4.062 seconds (process running for 5.018)
+2026-05-06 15:20:49.064 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending reservations. deletedSeats=0, expiredReservations=0
+2026-05-06 15:20:49.067 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending food orders. expiredFoodOrders=0
+2026-05-06 15:20:49.340 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [cgv_23rd.ceos.controller.AdminFoodControllerTest]: AdminFoodControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-05-06 15:20:49.351 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration cgv_23rd.ceos.Application for test class cgv_23rd.ceos.controller.AdminFoodControllerTest
+2026-05-06 15:20:49.377 [Test worker] INFO  c.c.c.AdminFoodControllerTest - Starting AdminFoodControllerTest using Java 21.0.10 with PID 8342 (started by shinae in /Users/shinae/Desktop/study/shinae1023)
+2026-05-06 15:20:49.377 [Test worker] INFO  c.c.c.AdminFoodControllerTest - The following 1 profile is active: "test"
+2026-05-06 15:20:49.554 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-06 15:20:49.569 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 14 ms. Found 21 JPA repository interfaces.
+2026-05-06 15:20:49.592 [Test worker] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=de343b37-c878-3822-a09c-20a1fb8e4a2b
+2026-05-06 15:20:50.256 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-06 15:20:50.259 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-05-06 15:20:50.268 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-06 15:20:50.269 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Starting...
+2026-05-06 15:20:50.270 [Test worker] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-2 - Added connection conn10: url=jdbc:h2:mem:testdb user=SA
+2026-05-06 15:20:50.270 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Start completed.
+2026-05-06 15:20:50.270 [Test worker] WARN  org.hibernate.orm.deprecation - HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-05-06 15:20:50.271 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-2)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-05-06 15:20:50.396 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-06 15:20:50.443 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:50.637 [Test worker] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-05-06 15:20:50.785 [Test worker] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoints beneath base path '/actuator'
+2026-05-06 15:20:50.800 [Test worker] INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name userDetailsServiceImpl
+2026-05-06 15:20:51.037 [Test worker] INFO  o.s.b.t.m.w.SpringBootMockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-05-06 15:20:51.037 [Test worker] INFO  o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2026-05-06 15:20:51.039 [Test worker] INFO  o.s.t.w.s.TestDispatcherServlet - Completed initialization in 2 ms
+2026-05-06 15:20:51.078 [Test worker] INFO  c.c.c.AdminFoodControllerTest - Started AdminFoodControllerTest in 1.725 seconds (process running for 7.09)
+2026-05-06 15:20:51.086 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending reservations. deletedSeats=0, expiredReservations=0
+2026-05-06 15:20:51.088 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending food orders. expiredFoodOrders=0
+2026-05-06 15:20:51.247 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [cgv_23rd.ceos.controller.AdminMovieControllerTest]: AdminMovieControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-05-06 15:20:51.250 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration cgv_23rd.ceos.Application for test class cgv_23rd.ceos.controller.AdminMovieControllerTest
+2026-05-06 15:20:51.343 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [cgv_23rd.ceos.controller.AuthControllerTest]: AuthControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-05-06 15:20:51.345 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration cgv_23rd.ceos.Application for test class cgv_23rd.ceos.controller.AuthControllerTest
+2026-05-06 15:20:51.388 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [cgv_23rd.ceos.controller.FoodOrderControllerTest]: FoodOrderControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-05-06 15:20:51.390 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration cgv_23rd.ceos.Application for test class cgv_23rd.ceos.controller.FoodOrderControllerTest
+2026-05-06 15:20:51.424 [Test worker] WARN  c.c.g.a.e.handler.ExceptionAdvice - Validation failed: [[items[0].quantity] must be greater than or equal to 1 (입력값: 0)]
+2026-05-06 15:20:51.445 [Test worker] ERROR AuthenticationEntryPoint - 인증되지 않은 사용자 접근: Full authentication is required to access this resource
+2026-05-06 15:20:51.475 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [cgv_23rd.ceos.controller.MovieControllerTest]: MovieControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-05-06 15:20:51.477 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration cgv_23rd.ceos.Application for test class cgv_23rd.ceos.controller.MovieControllerTest
+2026-05-06 15:20:51.515 [Test worker] ERROR AuthenticationEntryPoint - 인증되지 않은 사용자 접근: Full authentication is required to access this resource
+2026-05-06 15:20:51.542 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [cgv_23rd.ceos.controller.ReservationControllerTest]: ReservationControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-05-06 15:20:51.544 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration cgv_23rd.ceos.Application for test class cgv_23rd.ceos.controller.ReservationControllerTest
+2026-05-06 15:20:51.586 [Test worker] ERROR AuthenticationEntryPoint - 인증되지 않은 사용자 접근: Full authentication is required to access this resource
+2026-05-06 15:20:51.603 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [cgv_23rd.ceos.controller.ReviewControllerTest]: ReviewControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-05-06 15:20:51.605 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration cgv_23rd.ceos.Application for test class cgv_23rd.ceos.controller.ReviewControllerTest
+2026-05-06 15:20:51.630 [Test worker] ERROR AuthenticationEntryPoint - 인증되지 않은 사용자 접근: Full authentication is required to access this resource
+2026-05-06 15:20:51.647 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [cgv_23rd.ceos.controller.ScheduleControllerTest]: ScheduleControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-05-06 15:20:51.651 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration cgv_23rd.ceos.Application for test class cgv_23rd.ceos.controller.ScheduleControllerTest
+2026-05-06 15:20:51.668 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [cgv_23rd.ceos.controller.TheaterControllerTest]: TheaterControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-05-06 15:20:51.670 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration cgv_23rd.ceos.Application for test class cgv_23rd.ceos.controller.TheaterControllerTest
+2026-05-06 15:20:51.706 [Test worker] ERROR AuthenticationEntryPoint - 인증되지 않은 사용자 접근: Full authentication is required to access this resource
+2026-05-06 15:20:51.728 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [cgv_23rd.ceos.service.FoodPaymentFlowIntegrationTest]: FoodPaymentFlowIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-05-06 15:20:51.739 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration cgv_23rd.ceos.Application for test class cgv_23rd.ceos.service.FoodPaymentFlowIntegrationTest
+2026-05-06 15:20:51.772 [Test worker] INFO  c.c.s.FoodPaymentFlowIntegrationTest - Starting FoodPaymentFlowIntegrationTest using Java 21.0.10 with PID 8342 (started by shinae in /Users/shinae/Desktop/study/shinae1023)
+2026-05-06 15:20:51.772 [Test worker] INFO  c.c.s.FoodPaymentFlowIntegrationTest - The following 1 profile is active: "test"
+2026-05-06 15:20:52.028 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-06 15:20:52.053 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 23 ms. Found 21 JPA repository interfaces.
+2026-05-06 15:20:52.094 [Test worker] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=7aed13ff-a551-3fce-a7e0-8f429556ea6c
+2026-05-06 15:20:52.202 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-06 15:20:52.204 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-05-06 15:20:52.210 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-06 15:20:52.210 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-3 - Starting...
+2026-05-06 15:20:52.211 [Test worker] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-3 - Added connection conn20: url=jdbc:h2:mem:testdb user=SA
+2026-05-06 15:20:52.211 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-3 - Start completed.
+2026-05-06 15:20:52.211 [Test worker] WARN  org.hibernate.orm.deprecation - HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-05-06 15:20:52.212 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-3)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-05-06 15:20:52.303 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-06 15:20:52.339 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:52.505 [Test worker] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-05-06 15:20:52.629 [Test worker] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoints beneath base path '/actuator'
+2026-05-06 15:20:52.643 [Test worker] INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name userDetailsServiceImpl
+2026-05-06 15:20:52.804 [Test worker] INFO  c.c.s.FoodPaymentFlowIntegrationTest - Started FoodPaymentFlowIntegrationTest in 1.063 seconds (process running for 8.816)
+2026-05-06 15:20:52.810 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending reservations. deletedSeats=0, expiredReservations=0
+2026-05-06 15:20:52.812 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending food orders. expiredFoodOrders=0
+2026-05-06 15:20:52.819 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:52.825 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-3 - Shutdown initiated...
+2026-05-06 15:20:52.826 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-3 - Shutdown completed.
+2026-05-06 15:20:52.850 [Test worker] INFO  c.c.s.FoodPaymentFlowIntegrationTest - Starting FoodPaymentFlowIntegrationTest using Java 21.0.10 with PID 8342 (started by shinae in /Users/shinae/Desktop/study/shinae1023)
+2026-05-06 15:20:52.850 [Test worker] INFO  c.c.s.FoodPaymentFlowIntegrationTest - The following 1 profile is active: "test"
+2026-05-06 15:20:53.043 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-06 15:20:53.069 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 25 ms. Found 21 JPA repository interfaces.
+2026-05-06 15:20:53.103 [Test worker] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=7aed13ff-a551-3fce-a7e0-8f429556ea6c
+2026-05-06 15:20:53.158 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-06 15:20:53.160 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-05-06 15:20:53.164 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-06 15:20:53.165 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-4 - Starting...
+2026-05-06 15:20:53.166 [Test worker] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-4 - Added connection conn30: url=jdbc:h2:mem:testdb user=SA
+2026-05-06 15:20:53.166 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-4 - Start completed.
+2026-05-06 15:20:53.166 [Test worker] WARN  org.hibernate.orm.deprecation - HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-05-06 15:20:53.167 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-4)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-05-06 15:20:53.243 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-06 15:20:53.267 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:53.420 [Test worker] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-05-06 15:20:53.503 [Test worker] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoints beneath base path '/actuator'
+2026-05-06 15:20:53.516 [Test worker] INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name userDetailsServiceImpl
+2026-05-06 15:20:53.668 [Test worker] INFO  c.c.s.FoodPaymentFlowIntegrationTest - Started FoodPaymentFlowIntegrationTest in 0.84 seconds (process running for 9.68)
+2026-05-06 15:20:53.674 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending reservations. deletedSeats=0, expiredReservations=0
+2026-05-06 15:20:53.676 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending food orders. expiredFoodOrders=0
+2026-05-06 15:20:53.810 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:53.814 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-4 - Shutdown initiated...
+2026-05-06 15:20:53.815 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-4 - Shutdown completed.
+2026-05-06 15:20:53.837 [Test worker] INFO  c.c.s.FoodPaymentFlowIntegrationTest - Starting FoodPaymentFlowIntegrationTest using Java 21.0.10 with PID 8342 (started by shinae in /Users/shinae/Desktop/study/shinae1023)
+2026-05-06 15:20:53.838 [Test worker] INFO  c.c.s.FoodPaymentFlowIntegrationTest - The following 1 profile is active: "test"
+2026-05-06 15:20:53.990 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-06 15:20:54.009 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 17 ms. Found 21 JPA repository interfaces.
+2026-05-06 15:20:54.041 [Test worker] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=7aed13ff-a551-3fce-a7e0-8f429556ea6c
+2026-05-06 15:20:54.102 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-06 15:20:54.104 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-05-06 15:20:54.108 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-06 15:20:54.109 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-5 - Starting...
+2026-05-06 15:20:54.109 [Test worker] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-5 - Added connection conn40: url=jdbc:h2:mem:testdb user=SA
+2026-05-06 15:20:54.109 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-5 - Start completed.
+2026-05-06 15:20:54.110 [Test worker] WARN  org.hibernate.orm.deprecation - HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-05-06 15:20:54.110 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-5)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-05-06 15:20:54.177 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-06 15:20:54.197 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:54.312 [Test worker] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-05-06 15:20:54.365 [Test worker] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoints beneath base path '/actuator'
+2026-05-06 15:20:54.373 [Test worker] INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name userDetailsServiceImpl
+2026-05-06 15:20:54.482 [Test worker] INFO  c.c.s.FoodPaymentFlowIntegrationTest - Started FoodPaymentFlowIntegrationTest in 0.665 seconds (process running for 10.494)
+2026-05-06 15:20:54.487 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending reservations. deletedSeats=0, expiredReservations=0
+2026-05-06 15:20:54.489 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending food orders. expiredFoodOrders=0
+2026-05-06 15:20:54.547 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:54.552 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-5 - Shutdown initiated...
+2026-05-06 15:20:54.552 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-5 - Shutdown completed.
+2026-05-06 15:20:54.574 [Test worker] INFO  c.c.s.FoodPaymentFlowIntegrationTest - Starting FoodPaymentFlowIntegrationTest using Java 21.0.10 with PID 8342 (started by shinae in /Users/shinae/Desktop/study/shinae1023)
+2026-05-06 15:20:54.574 [Test worker] INFO  c.c.s.FoodPaymentFlowIntegrationTest - The following 1 profile is active: "test"
+2026-05-06 15:20:54.717 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-06 15:20:54.734 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 16 ms. Found 21 JPA repository interfaces.
+2026-05-06 15:20:54.756 [Test worker] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=7aed13ff-a551-3fce-a7e0-8f429556ea6c
+2026-05-06 15:20:54.803 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-06 15:20:54.804 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-05-06 15:20:54.808 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-06 15:20:54.808 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-6 - Starting...
+2026-05-06 15:20:54.809 [Test worker] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-6 - Added connection conn50: url=jdbc:h2:mem:testdb user=SA
+2026-05-06 15:20:54.809 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-6 - Start completed.
+2026-05-06 15:20:54.809 [Test worker] WARN  org.hibernate.orm.deprecation - HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-05-06 15:20:54.809 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-6)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-05-06 15:20:54.873 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-06 15:20:54.890 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:54.982 [Test worker] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-05-06 15:20:55.025 [Test worker] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoints beneath base path '/actuator'
+2026-05-06 15:20:55.032 [Test worker] INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name userDetailsServiceImpl
+2026-05-06 15:20:55.154 [Test worker] INFO  c.c.s.FoodPaymentFlowIntegrationTest - Started FoodPaymentFlowIntegrationTest in 0.6 seconds (process running for 11.165)
+2026-05-06 15:20:55.166 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending reservations. deletedSeats=0, expiredReservations=0
+2026-05-06 15:20:55.168 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending food orders. expiredFoodOrders=0
+2026-05-06 15:20:55.205 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [cgv_23rd.ceos.service.PendingReservationHoldIntegrationTest]: PendingReservationHoldIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-05-06 15:20:55.205 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration cgv_23rd.ceos.Application for test class cgv_23rd.ceos.service.PendingReservationHoldIntegrationTest
+2026-05-06 15:20:55.211 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:55.214 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-05-06 15:20:55.214 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-05-06 15:20:55.234 [Test worker] INFO  c.c.s.PendingReservationHoldIntegrationTest - Starting PendingReservationHoldIntegrationTest using Java 21.0.10 with PID 8342 (started by shinae in /Users/shinae/Desktop/study/shinae1023)
+2026-05-06 15:20:55.234 [Test worker] INFO  c.c.s.PendingReservationHoldIntegrationTest - The following 1 profile is active: "test"
+2026-05-06 15:20:55.360 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-06 15:20:55.376 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 14 ms. Found 21 JPA repository interfaces.
+2026-05-06 15:20:55.398 [Test worker] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=7aed13ff-a551-3fce-a7e0-8f429556ea6c
+2026-05-06 15:20:55.430 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-06 15:20:55.431 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-05-06 15:20:55.435 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-06 15:20:55.436 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-7 - Starting...
+2026-05-06 15:20:55.436 [Test worker] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-7 - Added connection conn60: url=jdbc:h2:mem:testdb user=SA
+2026-05-06 15:20:55.436 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-7 - Start completed.
+2026-05-06 15:20:55.436 [Test worker] WARN  org.hibernate.orm.deprecation - HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-05-06 15:20:55.437 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-7)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-05-06 15:20:55.491 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-06 15:20:55.507 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:55.581 [Test worker] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-05-06 15:20:55.670 [Test worker] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoints beneath base path '/actuator'
+2026-05-06 15:20:55.676 [Test worker] INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name userDetailsServiceImpl
+2026-05-06 15:20:55.760 [Test worker] INFO  c.c.s.PendingReservationHoldIntegrationTest - Started PendingReservationHoldIntegrationTest in 0.544 seconds (process running for 11.772)
+2026-05-06 15:20:55.765 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending reservations. deletedSeats=0, expiredReservations=0
+2026-05-06 15:20:55.768 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending food orders. expiredFoodOrders=0
+2026-05-06 15:20:55.804 [Test worker] INFO  c.c.s.PendingOrderExpirationService - Expired pending reservations. deletedSeats=1, expiredReservations=1
+2026-05-06 15:20:55.829 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:55.832 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-7 - Shutdown initiated...
+2026-05-06 15:20:55.849 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-7 - Shutdown completed.
+2026-05-06 15:20:55.868 [Test worker] INFO  c.c.s.PendingReservationHoldIntegrationTest - Starting PendingReservationHoldIntegrationTest using Java 21.0.10 with PID 8342 (started by shinae in /Users/shinae/Desktop/study/shinae1023)
+2026-05-06 15:20:55.868 [Test worker] INFO  c.c.s.PendingReservationHoldIntegrationTest - The following 1 profile is active: "test"
+2026-05-06 15:20:56.028 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-06 15:20:56.046 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 16 ms. Found 21 JPA repository interfaces.
+2026-05-06 15:20:56.064 [Test worker] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=7aed13ff-a551-3fce-a7e0-8f429556ea6c
+2026-05-06 15:20:56.100 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-06 15:20:56.101 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-05-06 15:20:56.105 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-06 15:20:56.106 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-8 - Starting...
+2026-05-06 15:20:56.106 [Test worker] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-8 - Added connection conn70: url=jdbc:h2:mem:testdb user=SA
+2026-05-06 15:20:56.107 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-8 - Start completed.
+2026-05-06 15:20:56.107 [Test worker] WARN  org.hibernate.orm.deprecation - HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-05-06 15:20:56.107 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-8)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-05-06 15:20:56.163 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-06 15:20:56.177 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:56.252 [Test worker] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-05-06 15:20:56.331 [Test worker] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoints beneath base path '/actuator'
+2026-05-06 15:20:56.339 [Test worker] INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name userDetailsServiceImpl
+2026-05-06 15:20:56.431 [Test worker] INFO  c.c.s.PendingReservationHoldIntegrationTest - Started PendingReservationHoldIntegrationTest in 0.58 seconds (process running for 12.443)
+2026-05-06 15:20:56.437 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending reservations. deletedSeats=0, expiredReservations=0
+2026-05-06 15:20:56.439 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending food orders. expiredFoodOrders=0
+2026-05-06 15:20:56.459 [Test worker] INFO  c.c.s.PendingOrderExpirationService - Expired pending reservations. deletedSeats=0, expiredReservations=0
+2026-05-06 15:20:56.469 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [cgv_23rd.ceos.service.ReservationConcurrencyTest]: ReservationConcurrencyTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-05-06 15:20:56.470 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration cgv_23rd.ceos.Application for test class cgv_23rd.ceos.service.ReservationConcurrencyTest
+2026-05-06 15:20:56.475 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:56.478 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-8 - Shutdown initiated...
+2026-05-06 15:20:56.495 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-8 - Shutdown completed.
+2026-05-06 15:20:56.512 [Test worker] INFO  c.c.s.ReservationConcurrencyTest - Starting ReservationConcurrencyTest using Java 21.0.10 with PID 8342 (started by shinae in /Users/shinae/Desktop/study/shinae1023)
+2026-05-06 15:20:56.512 [Test worker] INFO  c.c.s.ReservationConcurrencyTest - The following 1 profile is active: "test"
+2026-05-06 15:20:56.633 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-06 15:20:56.647 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 13 ms. Found 21 JPA repository interfaces.
+2026-05-06 15:20:56.663 [Test worker] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=7aed13ff-a551-3fce-a7e0-8f429556ea6c
+2026-05-06 15:20:56.697 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-06 15:20:56.698 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-05-06 15:20:56.702 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-06 15:20:56.702 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-9 - Starting...
+2026-05-06 15:20:56.703 [Test worker] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-9 - Added connection conn79: url=jdbc:h2:mem:testdb user=SA
+2026-05-06 15:20:56.703 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-9 - Start completed.
+2026-05-06 15:20:56.703 [Test worker] WARN  org.hibernate.orm.deprecation - HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-05-06 15:20:56.703 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-9)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-05-06 15:20:56.752 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-06 15:20:56.762 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:56.828 [Test worker] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-05-06 15:20:56.900 [Test worker] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoints beneath base path '/actuator'
+2026-05-06 15:20:56.912 [Test worker] INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name userDetailsServiceImpl
+2026-05-06 15:20:57.019 [Test worker] INFO  c.c.s.ReservationConcurrencyTest - Started ReservationConcurrencyTest in 0.522 seconds (process running for 13.031)
+2026-05-06 15:20:57.023 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending reservations. deletedSeats=0, expiredReservations=0
+2026-05-06 15:20:57.025 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending food orders. expiredFoodOrders=0
+2026-05-06 15:20:57.055 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:57.058 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-9 - Shutdown initiated...
+2026-05-06 15:20:57.082 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-9 - Shutdown completed.
+2026-05-06 15:20:57.098 [Test worker] INFO  c.c.s.ReservationConcurrencyTest - Starting ReservationConcurrencyTest using Java 21.0.10 with PID 8342 (started by shinae in /Users/shinae/Desktop/study/shinae1023)
+2026-05-06 15:20:57.098 [Test worker] INFO  c.c.s.ReservationConcurrencyTest - The following 1 profile is active: "test"
+2026-05-06 15:20:57.218 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-06 15:20:57.232 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 13 ms. Found 21 JPA repository interfaces.
+2026-05-06 15:20:57.248 [Test worker] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=7aed13ff-a551-3fce-a7e0-8f429556ea6c
+2026-05-06 15:20:57.280 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-06 15:20:57.281 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-05-06 15:20:57.284 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-06 15:20:57.285 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-10 - Starting...
+2026-05-06 15:20:57.285 [Test worker] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-10 - Added connection conn88: url=jdbc:h2:mem:testdb user=SA
+2026-05-06 15:20:57.285 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-10 - Start completed.
+2026-05-06 15:20:57.286 [Test worker] WARN  org.hibernate.orm.deprecation - HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-05-06 15:20:57.286 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-10)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-05-06 15:20:57.333 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-06 15:20:57.343 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:57.410 [Test worker] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-05-06 15:20:57.518 [Test worker] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoints beneath base path '/actuator'
+2026-05-06 15:20:57.524 [Test worker] INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name userDetailsServiceImpl
+2026-05-06 15:20:57.606 [Test worker] INFO  c.c.s.ReservationConcurrencyTest - Started ReservationConcurrencyTest in 0.522 seconds (process running for 13.617)
+2026-05-06 15:20:57.610 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending reservations. deletedSeats=0, expiredReservations=0
+2026-05-06 15:20:57.611 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending food orders. expiredFoodOrders=0
+2026-05-06 15:20:57.643 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:57.646 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-10 - Shutdown initiated...
+2026-05-06 15:20:57.668 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-10 - Shutdown completed.
+2026-05-06 15:20:57.683 [Test worker] INFO  c.c.s.ReservationConcurrencyTest - Starting ReservationConcurrencyTest using Java 21.0.10 with PID 8342 (started by shinae in /Users/shinae/Desktop/study/shinae1023)
+2026-05-06 15:20:57.683 [Test worker] INFO  c.c.s.ReservationConcurrencyTest - The following 1 profile is active: "test"
+2026-05-06 15:20:57.941 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-06 15:20:57.954 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 12 ms. Found 21 JPA repository interfaces.
+2026-05-06 15:20:57.970 [Test worker] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=7aed13ff-a551-3fce-a7e0-8f429556ea6c
+2026-05-06 15:20:58.000 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-06 15:20:58.001 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-05-06 15:20:58.004 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-06 15:20:58.004 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-11 - Starting...
+2026-05-06 15:20:58.005 [Test worker] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-11 - Added connection conn97: url=jdbc:h2:mem:testdb user=SA
+2026-05-06 15:20:58.005 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-11 - Start completed.
+2026-05-06 15:20:58.005 [Test worker] WARN  org.hibernate.orm.deprecation - HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-05-06 15:20:58.005 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-11)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-05-06 15:20:58.064 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-06 15:20:58.075 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:58.136 [Test worker] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-05-06 15:20:58.208 [Test worker] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoints beneath base path '/actuator'
+2026-05-06 15:20:58.213 [Test worker] INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name userDetailsServiceImpl
+2026-05-06 15:20:58.297 [Test worker] INFO  c.c.s.ReservationConcurrencyTest - Started ReservationConcurrencyTest in 0.627 seconds (process running for 14.308)
+2026-05-06 15:20:58.301 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending reservations. deletedSeats=0, expiredReservations=0
+2026-05-06 15:20:58.302 [scheduling-1] INFO  c.c.s.PendingOrderExpirationService - Expired pending food orders. expiredFoodOrders=0
+2026-05-06 15:20:58.759 [Test worker] INFO  c.c.s.p.PaymentFeignIntegrationTest - Starting PaymentFeignIntegrationTest using Java 21.0.10 with PID 8342 (started by shinae in /Users/shinae/Desktop/study/shinae1023)
+2026-05-06 15:20:58.759 [Test worker] INFO  c.c.s.p.PaymentFeignIntegrationTest - No active profile set, falling back to 1 default profile: "default"
+2026-05-06 15:20:58.848 [Test worker] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=cbe11674-0179-3e1c-bb44-e12a98288510
+2026-05-06 15:20:58.894 [Test worker] INFO  c.c.s.p.PaymentFeignIntegrationTest - Started PaymentFeignIntegrationTest in 0.153 seconds (process running for 14.906)
+2026-05-06 15:20:58.965 [Test worker] WARN  c.ceos.service.pay.PaymentService - Payment instant request returned empty success body. paymentId=RES_1_12345678
+2026-05-06 15:20:58.982 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:58.983 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists actor cascade 
+2026-05-06 15:20:58.983 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists food cascade 
+2026-05-06 15:20:58.983 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists food_order cascade 
+2026-05-06 15:20:58.983 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists food_order_item cascade 
+2026-05-06 15:20:58.983 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists movie cascade 
+2026-05-06 15:20:58.984 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists movie_actor cascade 
+2026-05-06 15:20:58.984 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists movie_image cascade 
+2026-05-06 15:20:58.984 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists movie_like cascade 
+2026-05-06 15:20:58.984 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists movie_screen cascade 
+2026-05-06 15:20:58.984 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists movie_statistics cascade 
+2026-05-06 15:20:58.984 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists refresh_token cascade 
+2026-05-06 15:20:58.984 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists reservation cascade 
+2026-05-06 15:20:58.984 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists reservation_seat cascade 
+2026-05-06 15:20:58.984 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists review cascade 
+2026-05-06 15:20:58.985 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists screen cascade 
+2026-05-06 15:20:58.985 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists screen_type cascade 
+2026-05-06 15:20:58.985 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists seat cascade 
+2026-05-06 15:20:58.985 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists seat_template cascade 
+2026-05-06 15:20:58.985 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists theater cascade 
+2026-05-06 15:20:58.985 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists theater_food cascade 
+2026-05-06 15:20:58.985 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists theater_like cascade 
+2026-05-06 15:20:58.985 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists users cascade 
+2026-05-06 15:20:58.986 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown initiated...
+2026-05-06 15:20:58.986 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown completed.
+2026-05-06 15:20:58.990 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:58.990 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists actor cascade 
+2026-05-06 15:20:58.990 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists food cascade 
+2026-05-06 15:20:58.990 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists food_order cascade 
+2026-05-06 15:20:58.990 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists food_order_item cascade 
+2026-05-06 15:20:58.990 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists movie cascade 
+2026-05-06 15:20:58.990 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists movie_actor cascade 
+2026-05-06 15:20:58.990 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists movie_image cascade 
+2026-05-06 15:20:58.990 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists movie_like cascade 
+2026-05-06 15:20:58.990 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists movie_screen cascade 
+2026-05-06 15:20:58.990 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists movie_statistics cascade 
+2026-05-06 15:20:58.990 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists refresh_token cascade 
+2026-05-06 15:20:58.990 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists reservation cascade 
+2026-05-06 15:20:58.990 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists reservation_seat cascade 
+2026-05-06 15:20:58.990 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists review cascade 
+2026-05-06 15:20:58.991 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists screen cascade 
+2026-05-06 15:20:58.991 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists screen_type cascade 
+2026-05-06 15:20:58.991 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists seat cascade 
+2026-05-06 15:20:58.991 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists seat_template cascade 
+2026-05-06 15:20:58.991 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists theater cascade 
+2026-05-06 15:20:58.991 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists theater_food cascade 
+2026-05-06 15:20:58.991 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists theater_like cascade 
+2026-05-06 15:20:58.991 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists users cascade 
+2026-05-06 15:20:58.992 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-6 - Shutdown initiated...
+2026-05-06 15:20:58.992 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-6 - Shutdown completed.
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists actor cascade 
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists food cascade 
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists food_order cascade 
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists food_order_item cascade 
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists movie cascade 
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists movie_actor cascade 
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists movie_image cascade 
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists movie_like cascade 
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists movie_screen cascade 
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists movie_statistics cascade 
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists refresh_token cascade 
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists reservation cascade 
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists reservation_seat cascade 
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists review cascade 
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists screen cascade 
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists screen_type cascade 
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists seat cascade 
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists seat_template cascade 
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists theater cascade 
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists theater_food cascade 
+2026-05-06 15:20:58.997 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists theater_like cascade 
+2026-05-06 15:20:58.998 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists users cascade 
+2026-05-06 15:20:58.998 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-11 - Shutdown initiated...
+2026-05-06 15:20:59.000 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-11 - Shutdown completed.
