@@ -1,3 +1,333 @@
+## 트랜잭션 전파 속성
+### REQUIRED 
+: 스프링 트랜잭션의 기본 설정 이미 진행 중인 트랜잭션이 있으면 기존 트랜잭션에 합류하고, 없으면 새로운 물리 트랜잭션을 생성함 여러 논리 트랜잭션이 하나의 물리 트랜잭션을 공유하게 됨
+
+```
+@Service
+@RequiredArgsConstructor 
+public class OrderService {
+
+    private PaymentService paymentService;
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void processOrder(Order order) {
+        orderRepository.save(order);   
+        // 기존 트랜잭션에 합류
+        paymentService.processPayment(order); 
+    }
+}
+
+@Service
+public class PaymentService {
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void processPayment(Order order) {
+        paymentRepository.save(new Payment(order.getId(), order.getAmount()));
+    }
+}
+```
+
+```
+processOrder 시작 (신규 물리 트랜잭션 1 시작, rollbackOnly = false)
+    ├── orderRepository.save()    
+    │
+    ├── processPayment() 호출 (물리 트랜잭션 1에 합류)
+    │       ├── paymentRepository.save() 
+    │       ├──  예외 발생
+    │       └── 트랜잭션 매니저가 rollbackOnly = true 로 마킹
+    │
+    ├── 예외가 processOrder로 전파됨
+    │
+    └── processOrder 종료 시점
+            ↓
+        rollbackOnly = true 확인
+            ↓
+        물리 트랜잭션 1 전체 ROLLBACK 
+            ↓
+        주문, 결제 모두 롤백됨
+```
+
+여러 서비스 로직을 완벽하게 하나의 원자적 작업(All or Nothing)으로 묶어서, 하나라도 실패하면 전체를 취소해야 할 때 사용
+
+### REQUIRES_NEW
+: 현재 트랜잭션의 존재 여부와 상관없이 항상 새로운 물리 트랜잭션을 시작 기존 트랜잭션이 있으면 이를 일시 정지시키고, 새로운 커넥션을 맺어 독립적으로 실행
+
+```
+@Service
+@RequiredArgsConstructor 
+public class OrderService {
+
+    private LogService logService;
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void processOrder(Order order) {
+        orderRepository.save(order);
+        
+        try {
+            // 새 물리 트랜잭션 시작
+            logService.writeLog("주문 시도: " + order.getId());
+        } catch (RuntimeException e) {
+            // 예외를 잡아서 부모 트랜잭션으로 전파되는 것을 막음
+            log.error("로그 저장 실패");
+        }
+    }
+}
+
+@Service
+public class LogService {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void writeLog(String message) {
+        logRepository.save(new Log(message));
+    }
+}
+
+```
+
+```
+processOrder 시작 (신규 물리 트랜잭션 1 시작)
+    ├── orderRepository.save()     
+    │
+    ├── writeLog() 시작
+    │       ├── 물리 트랜잭션 1 일시 정지
+    │       ├── 신규 물리 트랜잭션 2 시작 (새 DB Connection)
+    │       ├── 예외 발생
+    │       └── 물리 트랜잭션 2 ROLLBACK (로그만 롤백)
+    │
+    ├── 예외가 processOrder로 던져짐 -> catch문으로 잡음 
+    │       ↓
+    │   물리 트랜잭션 1 재개
+    │
+    └── processOrder 종료 시점
+            ↓
+        rollbackOnly = false 유지됨 (예외를 잡았으므로)
+            ↓
+        물리 트랜잭션 1 COMMIT 
+            ↓
+        로그는 롤백되었지만 주문은 정상 커밋됨
+
+```
+
+메인 비즈니스 로직의 성공/실패 여부와 무관하게 반드시 커밋되어야 하는 로직(예: 시스템 로그, 통계 데이터 적재)을 분리할 때 사용 단, DB 커넥션을 2개 이상 동시에 사용하므로 트래픽이 많을 때 커넥션 풀(Connection Pool)이 빠르게 고갈될 수 있어 주의가 필요
+
+### MANDATORY
+  : 기존 트랜잭션이 반드시 있어야 함. 이미 진행 중인 트랜잭션이 있으면 합류하고, 없으면 예외(IllegalTransactionStateException)를 발생시킴
+
+```
+@Service
+@RequiredArgsConstructor 
+public class OrderService {
+
+    private LogService logService;
+
+    // 트랜잭션 없음
+    public void processOrder(Order order) {
+        // ① 로그 저장 (오류 발생)
+        logService.writeLog("주문 시도: " + order.getId()); 
+    }
+}
+
+@Service
+public class LogService {
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void writeLog(String message) {
+        logRepository.save(new Log(message));
+    }
+}
+```
+
+```
+트랜잭션 흐름 (부모 트랜잭션이 없을 경우)
+
+Plaintext
+processOrder 시작 (트랜잭션 X)
+    ├── writeLog() 호출
+    │       ↓
+    │   트랜잭션 매니저 확인: "진행 중인 트랜잭션이 없네?"
+    │       ↓
+    │   IllegalTransactionStateException 예외 발생 
+    │       ↓
+    └── processOrder 비정상 종료 (로그 저장 실패)
+= 강제적으로 부모 트랜잭션 내에서만 실행되도록 보장해야 할 때 사용
+```
+
+### SUPPORTS
+: 기존 트랜잭션이 있으면 합류하고, 없으면 트랜잭션 없이(Non-Transactional) 단순하게 실행
+
+```
+@Service
+@RequiredArgsConstructor 
+public class OrderService {
+
+    private SelectService selectService;
+
+    // 트랜잭션 없음
+    public void getOrderInfo() {
+        selectService.readData();
+    }
+}
+
+@Service
+public class SelectService {
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public void readData() {
+        // 데이터 조회 로직
+    }
+}
+```
+
+```
+트랜잭션 흐름 (부모 트랜잭션이 없을 경우)
+
+Plaintext
+getOrderInfo 시작 (트랜잭션 X)
+    ├── readData() 호출
+    │       ↓
+    │   트랜잭션 매니저 확인: "진행 중인 트랜잭션 없음"
+    │       ↓
+    │   신규 트랜잭션 생성 안 함 (단순 쿼리 실행) 
+    │       ↓
+    └── getOrderInfo 종료
+```
+
+읽기 전용 메서드처럼 굳이 트랜잭션 오버헤드가 필요 없지만, 부모 트랜잭션이 있다면 같은 영속성 컨텍스트를 공유하고 싶을 때 사용
+
+### NOT_SUPPORTED
+: 트랜잭션을 지원하지 않음. 기존 진행 중인 트랜잭션이 있으면 이를 일시 정지하고, 트랜잭션 없이(Non-Transactional) 실행
+
+```
+@Service
+@RequiredArgsConstructor 
+public class OrderService {
+
+    private ExternalApiService externalApiService;
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void processOrder(Order order) {
+        orderRepository.save(order);
+        // 트랜잭션 일시 정지 후 외부 API 호출
+        externalApiService.sendSms("주문 완료");
+    }
+}
+
+@Service
+public class ExternalApiService {
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void sendSms(String message) {
+        // 외부 SMS 발송 로직 (DB 트랜잭션 무관)
+    }
+}
+```
+
+```
+processOrder 시작 (신규 트랜잭션 1 시작)
+    ├── orderRepository.save()      영속성 컨텍스트에 적재
+    │
+    ├── sendSms() 시작
+    │       ├── 물리 트랜잭션 1 일시 정지
+    │       ├── 트랜잭션 없이 외부 API 호출 실행 
+    │       └── 완료 후 물리 트랜잭션 1 재개
+    │
+    └── processOrder 종료 → 트랜잭션 1 COMMIT 
+```
+DB Connection을 오래 쥐고 있으면 안 되는 외부 API 호출이나, 긴 작업 시간이 소요되는 트랜잭션 무관 로직을 처리할 때 사용
+
+### NEVER
+: 트랜잭션 환경을 절대 허용하지 않고 기존 진행 중인 트랜잭션이 있으면 예외(IllegalTransactionStateException)를 발생시킴 없으면 트랜잭션 없이 실행
+
+```
+@Service
+@RequiredArgsConstructor 
+public class OrderService {
+
+    private VerifyService verifyService;
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void processOrder(Order order) {
+        // 검증 로직 호출 (오류 발생)
+        verifyService.checkSomething();
+    }
+}
+
+@Service
+public class VerifyService {
+    @Transactional(propagation = Propagation.NEVER)
+    public void checkSomething() {
+        // 무거운 비즈니스 로직
+    }
+}
+```
+
+```
+processOrder 시작 (신규 트랜잭션 시작)
+    ├── checkSomething() 호출
+    │       ↓
+    │   트랜잭션 매니저 확인: "트랜잭션이 진행 중이네?"
+    │       ↓
+    │   IllegalTransactionStateException 예외 발생 
+    │       ↓
+    └── processOrder 비정상 종료 (전체 롤백)
+```
+
+트랜잭션이 적용되면 치명적인 데드락이 발생하거나 성능 저하가 우려되는 핵심 로직을 보호하기 위해 강제 차단할 때 사용
+
+### NESTED
+: 기존 트랜잭션이 있으면 중첩 트랜잭션을 시작함. (기존 트랜잭션이 없으면 REQUIRED와 동일하게 작동)
+물리 트랜잭션은 부모와 1개를 공유하지만 중첩 지점에 DB Savepoint를 생성하여 자식 트랜잭션 부분만 별도로 롤백 가능
+
+```
+@Service
+@RequiredArgsConstructor 
+public class OrderService {
+
+    private LogService logService;
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void processOrder(Order order) {
+        orderRepository.save(order);
+        
+        try {
+            // 자식 트랜잭션 호출
+            logService.writeLog("주문 완료");
+        } catch (RuntimeException e) {
+            // 예외를 잡아서 부모 트랜잭션으로 전파되지 않게 막음
+            log.error("로그 저장 실패, 하지만 주문은 진행함");
+        }
+    }
+}
+
+@Service
+public class LogService {
+    @Transactional(propagation = Propagation.NESTED)
+    public void writeLog(String message) {
+        logRepository.save(new Log(message));
+        throw new RuntimeException("로그 저장 중 오류 발생");
+    }
+}
+```
+
+```
+processOrder 시작 (신규 물리 트랜잭션 1 시작)
+    ├── orderRepository.save()      
+    │
+    ├── writeLog() 시작
+    │       ├── 물리 트랜잭션 1 내부에 Savepoint 생성
+    │       ├── logRepository.save() 
+    │       ├──  예외 발생
+    │       └── Savepoint 지점까지만 ROLLBACK (부모에게 영향 없음)
+    │
+    ├── 예외가 processOrder로 던져짐 -> catch문으로 잡음 
+    │
+    └── processOrder 종료
+            ↓
+        rollbackOnly = false 유지됨
+            ↓
+        물리 트랜잭션 1 COMMIT 
+            ↓
+        주문은 커밋, 로그는 롤백됨
+
+```
+
+REQUIRES_NEW보다 DB Connection 낭비를 줄이면서, 부분 롤백(특정 작업 실패 시 메인 작업은 유지)이 필요할 때 사용 (단, JPA에서는 지원하지 않으며 JDBC Savepoint 기능에 의존)
+  
 ## 운영 로깅 개선
 
 ### 이번 리팩토링에서 적용한 내용
