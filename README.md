@@ -473,6 +473,207 @@ REQUIRES_NEW보다 DB Connection 낭비를 줄이면서, 부분 롤백(특정 �
 - 보상 처리의 동시성 안정성이 높아짐
 - 결제 상태 전이 규칙이 강화되어 잘못된 상태 변경 가능성이 줄어듦
 
+---
+## 쿼리 성능 최적화
+
+이번 과제에서는 실제 서비스에서 자주 사용되거나 성능 병목이 발생할 수 있는 쿼리를 선정한 뒤,  
+`EXPLAIN ANALYZE`를 통해 실행 계획을 직접 확인하고 인덱스를 개선하여 성능을 최적화했다.
+
+최적화 대상은 다음 3가지 쿼리이다.
+
+1. 예약 만료 대상 조회 쿼리
+2. 사용자별 예매 목록 조회 쿼리
+3. 상영 시간 겹침 검사 쿼리
+
+### 1. 예약 만료 대상 조회 쿼리 최적화
+
+#### 대상 쿼리
+
+```sql
+SELECT id
+FROM reservation
+WHERE status = '대기'
+  AND payment_status IN ('READY', 'FAILED')
+  AND created_at < NOW() + INTERVAL 1 DAY;
+```
+
+#### 기존 문제점
+
+기존에는 `reservation(status, created_at)` 인덱스를 사용하고 있었기 때문에  
+`status`, `created_at` 조건은 인덱스로 처리할 수 있었지만,  
+`payment_status` 조건은 별도의 `Filter` 단계에서 후처리되고 있었다.
+
+기존 실행 계획 일부:
+
+```text
+Filter: (reservation.payment_status in ('READY','FAILED'))
+Index range scan on reservation using idx_reservation_status_created_at
+```
+
+즉 쿼리 조건은 `status`, `payment_status`, `created_at`를 모두 사용하지만,  
+기존 인덱스는 `payment_status`를 반영하지 못해 조건과 인덱스 구성이 완전히 일치하지 않았다.
+
+#### 적용한 인덱스
+
+```sql
+CREATE INDEX idx_reservation_status_payment_created_id
+ON reservation (status, payment_status, created_at, id);
+```
+
+#### 개선 결과
+
+복합 인덱스 적용 후 실행 계획:
+
+```text
+Covering index range scan on reservation using idx_reservation_status_payment_created_id
+```
+
+즉 `status`, `payment_status`, `created_at`를 모두 인덱스에서 처리할 수 있게 되었고,  
+조회 컬럼인 `id`까지 인덱스에 포함되어 테이블 본문 접근 없이 결과를 반환할 수 있게 되었다.
+
+#### 정리
+
+- 기존: `payment_status` 후처리 필터 발생
+- 개선 후: `Covering index range scan`
+- 의미: 조건과 인덱스 구조의 정합성이 높아짐
+
+---
+
+### 2. 사용자별 예매 목록 조회 쿼리 최적화
+
+#### 대상 쿼리
+
+```sql
+SELECT id
+FROM reservation
+WHERE user_id = 1
+ORDER BY created_at DESC
+LIMIT 20;
+```
+
+#### 기존 문제점
+
+기존에는 `user_id`에 대한 외래키 인덱스는 존재했지만,  
+정렬 기준인 `created_at DESC`가 인덱스에 포함되어 있지 않아 추가 정렬이 발생했다.
+
+기존 실행 계획:
+
+```text
+Index lookup on reservation using FK... (user_id=1)
+Sort: reservation.created_at DESC
+```
+
+즉 사용자별 예매는 빠르게 찾을 수 있었지만,  
+최신순으로 정렬하기 위해 별도의 `Sort` 비용이 들었다.
+
+#### 적용한 인덱스
+
+```sql
+CREATE INDEX idx_reservation_user_created_id
+ON reservation (user_id, created_at, id);
+```
+
+#### 개선 결과
+
+개선 후 실행 계획:
+
+```text
+Covering index lookup on reservation using idx_reservation_user_created_id (user_id=1) (reverse)
+```
+
+실행 시간 비교:
+
+- 최적화 전: `2.57 ms`
+- 최적화 후: `0.665 ms`
+
+#### 정리
+
+- 기존: `user_id` 조건 탐색 후 별도 정렬 수행
+- 개선 후: 복합 인덱스를 통해 최신순 조회를 인덱스 수준에서 처리
+- 의미: `WHERE + ORDER BY + LIMIT` 패턴 최적화 성공
+
+---
+
+### 3. 상영 시간 겹침 검사 쿼리 최적화
+
+#### 대상 쿼리
+
+```sql
+SELECT COUNT(*) > 0
+FROM movie_screen ms
+WHERE ms.screen_id = 1
+  AND ms.start_at < '2026-12-01 20:00:00'
+  AND ms.end_at > '2026-12-01 19:00:00';
+```
+
+이 쿼리는 상영 일정 등록 시,  
+해당 상영관에 시간 겹침이 존재하는지 검사하는 데 사용된다.
+
+#### 기존 문제점
+
+기존에는 `screen_id` 외래키 인덱스를 통해 상영관별 후보를 찾은 뒤,  
+`start_at`, `end_at` 조건은 후처리 필터로 검사하고 있었다.
+
+기존 실행 계획:
+
+```text
+Index lookup on ms using FK... (screen_id=1)
+Filter: (ms.start_at < ... and ms.end_at > ...)
+```
+
+즉 상영관 단위로는 빠르게 찾지만,  
+시간 조건은 인덱스 차원에서 충분히 활용하지 못하고 있었다.
+
+#### 적용한 인덱스
+
+```sql
+CREATE INDEX idx_movie_screen_screen_start_end
+ON movie_screen (screen_id, start_at, end_at);
+```
+
+#### 개선 결과
+
+개선 후 실행 계획:
+
+```text
+Covering index range scan on ms using idx_movie_screen_screen_start_end
+```
+
+실행 시간 비교:
+
+- 최적화 전: `0.124 ms`
+- 최적화 후: `0.052 ms`
+
+#### 정리
+
+- 기존: `screen_id`만 인덱스로 찾고 시간 조건은 필터 처리
+- 개선 후: `screen_id + start_at + end_at` 복합 인덱스를 활용한 범위 탐색
+- 의미: 일정 충돌 검사 비용 감소
+
+---
+
+## 실행 계획 및 성능 비교 요약
+
+| 쿼리 | 기존 방식 | 개선 방식 | 최적화 전 | 최적화 후 |
+|---|---|---|---:|---:|
+| 예약 만료 대상 조회 | `status`, `created_at` 인덱스 + `payment_status` 후처리 | `status`, `payment_status`, `created_at`, `id` 복합 인덱스 | 실행시간 차이 미미 | `Covering index range scan` 확인 |
+| 사용자별 예매 목록 조회 | `user_id` 인덱스 탐색 후 정렬 | `user_id`, `created_at`, `id` 복합 인덱스 | `2.57 ms` | `0.665 ms` |
+| 상영 시간 겹침 검사 | `screen_id` 인덱스 탐색 후 시간 필터 | `screen_id`, `start_at`, `end_at` 복합 인덱스 | `0.124 ms` | `0.052 ms` |
+
+---
+
+## 결론
+
+이번 최적화에서는 단순히 인덱스를 추가하는 데 그치지 않고,  
+실제 쿼리의 조건 순서와 접근 패턴에 맞게 복합 인덱스를 설계했다.
+
+특히 다음과 같은 점을 확인할 수 있었다.
+
+- 조건 컬럼이 인덱스에 충분히 반영되지 않으면 후처리 `Filter`가 남는다.
+- `WHERE + ORDER BY + LIMIT` 패턴은 정렬 컬럼까지 포함한 복합 인덱스가 매우 중요하다.
+- `Covering index scan`이 가능해지면 테이블 본문 접근 없이 더 효율적인 조회가 가능하다.
+
+
 
 ## 운영 로깅 개선
 
