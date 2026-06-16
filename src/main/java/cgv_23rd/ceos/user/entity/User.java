@@ -9,6 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
@@ -17,6 +18,8 @@ import java.util.List;
 @Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User implements UserDetails {
+
+    private static final LocalDate DEFAULT_BIRTH = LocalDate.of(2000, 1, 1);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,6 +37,9 @@ public class User implements UserDetails {
     @Column(nullable = false, length = 30)
     private String name;
 
+    @Column(nullable = false)
+    private LocalDate birth;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Part part;
@@ -47,11 +53,12 @@ public class User implements UserDetails {
     private UserRole role;
 
     @Builder
-    private User(String loginId, String password, String email, String name, Part part, Team team, UserRole role) {
+    private User(String loginId, String password, String email, String name, LocalDate birth, Part part, Team team, UserRole role) {
         this.loginId = loginId;
         this.password = password;
         this.email = email;
         this.name = name;
+        this.birth = birth == null ? DEFAULT_BIRTH : birth;
         this.part = part;
         this.team = team;
         this.role = role == null ? UserRole.USER : role;
