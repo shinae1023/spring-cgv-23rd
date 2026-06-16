@@ -38,13 +38,13 @@ public class JwtProvider {
     public JwtProvider(
             ObjectMapper objectMapper,
             RoleHierarchy roleHierarchy,
-            @Value("${security.jwt.secret}") String secret,
-            @Value("${security.jwt.expiration-minutes}") long expirationMinutes
+            @Value("${jwt.secret.key}") String secret,
+            @Value("${jwt.expiration.access-token}") long accessTokenExpirationMillis
     ) {
         this.objectMapper = objectMapper;
         this.roleHierarchy = roleHierarchy;
         this.secret = secret.getBytes(StandardCharsets.UTF_8);
-        this.expirationSeconds = expirationMinutes * 60;
+        this.expirationSeconds = accessTokenExpirationMillis / 1000;
     }
 
     public String createAccessToken(User user) {
