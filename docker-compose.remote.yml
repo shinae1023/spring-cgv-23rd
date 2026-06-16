@@ -1,0 +1,17 @@
+services:
+  app:
+    image: ${APP_IMAGE:?APP_IMAGE is required}
+    container_name: ${APP_CONTAINER_NAME:-ceos-app}
+    pull_policy: always
+    env_file:
+      - ${APP_ENV_FILE:-.env}
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
+    ports:
+      - "${APP_HOST_PORT:-8080}:8080"
+    volumes:
+      - app-logs:/app/logs
+    restart: unless-stopped
+
+volumes:
+  app-logs:

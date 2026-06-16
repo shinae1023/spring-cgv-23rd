@@ -12,7 +12,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableRetry
 @EnableCaching
-@EnableConfigurationProperties(PaymentProperties.class)
 @EnableJpaAuditing
 @EnableScheduling
 @SpringBootApplication

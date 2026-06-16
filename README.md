@@ -2644,6 +2644,56 @@ docker logs -f ceos-app
 - 로그에 `Tomcat started on port 8080`
 - 로그에 `Started Application`
 
+### 6-6. 기존 서버에서 Docker 이미지만 바꿔 다른 프로젝트 배포하기
+
+소스코드를 다시 빌드하지 않고, 서버에서 이미지 주소만 바꿔 배포하려면 `docker-compose.remote.yml`을 사용하면 된다.
+
+1. EC2에 새 프로젝트용 환경변수 파일 준비
+
+```bash
+nano ~/.env.other-project
+```
+
+2. 기존 앱 컨테이너 정리
+
+```bash
+docker rm -f ceos-app
+```
+
+3. 새 이미지로 배포
+
+```bash
+APP_IMAGE=docker.io/<dockerhub-user>/<new-project>:latest \
+APP_CONTAINER_NAME=ceos-app \
+APP_ENV_FILE=/home/ubuntu/.env.other-project \
+APP_HOST_PORT=8080 \
+docker compose -f docker-compose.remote.yml up -d
+```
+
+4. 재배포 또는 이미지 교체
+
+```bash
+APP_IMAGE=docker.io/<dockerhub-user>/<another-project>:latest \
+APP_CONTAINER_NAME=ceos-app \
+APP_ENV_FILE=/home/ubuntu/.env.another-project \
+APP_HOST_PORT=8080 \
+docker compose -f docker-compose.remote.yml up -d
+```
+
+5. 확인
+
+```bash
+docker compose -f docker-compose.remote.yml ps
+docker logs -f ceos-app
+```
+
+주의:
+
+- 이 방식은 컨테이너 이름과 외부 포트는 유지하고, 이미지와 환경변수 파일만 교체하는 용도다.
+- 새 이미지가 컨테이너 내부 `8080` 포트를 사용한다는 전제가 있다. 내부 포트가 다르면 compose 파일 수정이 필요하다.
+- 새 프로젝트의 환경변수 키는 기존 `~/.env`와 다를 수 있으니 프로젝트별 `.env` 파일을 분리하는 편이 안전하다.
+- 현재 `.github/workflows/cd.yml`은 여전히 이 저장소의 앱 이미지 `shinae1023/ceos-app`을 빌드해서 배포하도록 고정돼 있다. 다른 프로젝트 이미지를 자동 배포하려면 해당 프로젝트 저장소에 별도 CD를 두는 것이 맞다.
+
 ### 7. AWS RDS 연결 시 체크 포인트
 
 - `RDS_ENDPOINT`가 실제 endpoint인지 확인
