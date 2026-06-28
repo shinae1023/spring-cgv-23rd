@@ -1,7 +1,7 @@
 package com.ceos.voteservice.global.exception;
 
-import java.util.Map;
-import org.springframework.http.HttpStatus;
+import com.ceos.voteservice.global.response.ErrorResponse;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -12,30 +12,74 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<Map<String, String>> handleBadCredentials(BadCredentialsException exception) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("message", "아이디 혹은 비밀번호가 올바르지 않습니다."));
+    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException exception) {
+        return toResponse(ErrorCode.AUTH_001);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException exception) {
+    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException exception) {
         String message = exception.getBindingResult().getFieldErrors().stream()
                 .findFirst()
                 .map(error -> error.getDefaultMessage())
-                .orElse("요청값이 올바르지 않습니다.");
+                .orElse(ErrorCode.COMMON_001.getMessage());
 
-        return ResponseEntity.badRequest().body(Map.of("message", message));
+        return toResponse(ErrorCode.COMMON_001, message);
     }
 
     @ExceptionHandler(DuplicateResourceException.class)
-    public ResponseEntity<Map<String, String>> handleDuplicateResource(DuplicateResourceException exception) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(Map.of("message", exception.getMessage()));
+    public ResponseEntity<ErrorResponse> handleDuplicateResource(DuplicateResourceException exception) {
+        ErrorCode errorCode = exception.getMessage().contains("아이디")
+                ? ErrorCode.MEMBER_001
+                : ErrorCode.MEMBER_002;
+
+        return toResponse(errorCode, exception.getMessage());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException exception) {
+        return toResponse(ErrorCode.VOTE_001);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException exception) {
-        return ResponseEntity.badRequest()
-                .body(Map.of("message", exception.getMessage()));
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException exception) {
+        ErrorCode errorCode = resolveIllegalArgumentErrorCode(exception.getMessage());
+        return toResponse(errorCode, exception.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(Exception exception) {
+        return toResponse(ErrorCode.COMMON_999);
+    }
+
+    private ErrorCode resolveIllegalArgumentErrorCode(String message) {
+        if (message.contains("파트장 투표는 1회") || message.contains("팀 투표는 1회")) {
+            return ErrorCode.VOTE_001;
+        }
+        if (message.contains("본인 파트")) {
+            return ErrorCode.VOTE_002;
+        }
+        if (message.contains("본인 팀")) {
+            return ErrorCode.VOTE_003;
+        }
+        if (message.contains("후보자")) {
+            return ErrorCode.CANDIDATE_001;
+        }
+        if (message.contains("유저")) {
+            return ErrorCode.MEMBER_003;
+        }
+        if (message.contains("인증")) {
+            return ErrorCode.AUTH_002;
+        }
+
+        return ErrorCode.COMMON_001;
+    }
+
+    private ResponseEntity<ErrorResponse> toResponse(ErrorCode errorCode) {
+        return toResponse(errorCode, errorCode.getMessage());
+    }
+
+    private ResponseEntity<ErrorResponse> toResponse(ErrorCode errorCode, String message) {
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(new ErrorResponse(errorCode.name(), message));
     }
 }
