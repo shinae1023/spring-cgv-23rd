@@ -136,6 +136,17 @@ public class HomeController {
                             animation: fadeUp 0.8s ease-out 0.35s both;
                         }
 
+                        a {
+                            color: var(--accent);
+                            font-weight: 700;
+                            text-decoration: none;
+                            word-break: break-all;
+                        }
+
+                        a:hover {
+                            text-decoration: underline;
+                        }
+
                         .sparkles {
                             display: flex;
                             justify-content: center;
@@ -248,8 +259,8 @@ public class HomeController {
                                 CEOS VOTE 서버입니다
                             </h1>
                             <p>
-                                투표 API가 반갑게 대기 중입니다.
-                                오늘의 선택도, 팀의 결정도 이 서버가 든든하게 받아둘게요.
+                                투표하러 가기 ➡️<br>
+                                <a href="https://ceos-week7.vercel.app">https://ceos-week7.vercel.app</a>
                             </p>
                             <div class="sparkles" aria-hidden="true">
                                 <span></span>
