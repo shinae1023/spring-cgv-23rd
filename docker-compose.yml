@@ -1,0 +1,31 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        JAR_FILE: build/libs/*.jar
+    container_name: vote-service-app
+    restart: unless-stopped
+    expose:
+      - "8080"
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: vote-service-nginx
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    volumes:
+      - ./nginx/conf.d/app.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certbot/www:/var/www/certbot:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
